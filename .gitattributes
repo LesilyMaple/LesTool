@@ -1,0 +1,8 @@
+# 统一换行符，避免 Git Bash / Windows 工具链混用导致的无意义 diff
+* text=auto eol=crlf
+
+# 二进制文件
+*.ico binary
+*.png binary
+*.dll binary
+*.exe binary

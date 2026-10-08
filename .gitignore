@@ -1,0 +1,15 @@
+# 构建产物
+bin/
+obj/
+artifacts/
+publish/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# 系统
+Thumbs.db
+.DS_Store

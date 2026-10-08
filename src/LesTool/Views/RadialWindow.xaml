@@ -1,0 +1,30 @@
+<Window x:Class="LesTool.Views.RadialWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        Topmost="True"
+        ShowActivated="False"
+        ResizeMode="NoResize"
+        Width="320" Height="320"
+        PreviewMouseLeftButtonDown="Window_PreviewMouseLeftButtonDown">
+    <Grid>
+        <Ellipse Fill="#E6202028" Stroke="#330099FF" StrokeThickness="1"/>
+        <Ellipse Fill="#14005599" Margin="56"/>
+        <Ellipse Fill="#CC2B2B36" Margin="120" Stroke="#1AFFFFFF" StrokeThickness="1"/>
+        <TextBlock Text="轮盘"
+                   Foreground="White" FontSize="13" Opacity="0.9"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <!-- 四向占位图标：上=设置 右=搜索 下=编辑 左=日历（MDL2 通用码位） -->
+        <TextBlock Text="&#xE713;" FontFamily="Segoe Fluent Icons,Segoe MDL2 Assets" FontSize="22" Foreground="#B3FFFFFF"
+                   HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,42,0,0"/>
+        <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons,Segoe MDL2 Assets" FontSize="22" Foreground="#B3FFFFFF"
+                   HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,42,0"/>
+        <TextBlock Text="&#xE70F;" FontFamily="Segoe Fluent Icons,Segoe MDL2 Assets" FontSize="22" Foreground="#B3FFFFFF"
+                   HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,42"/>
+        <TextBlock Text="&#xE787;" FontFamily="Segoe Fluent Icons,Segoe MDL2 Assets" FontSize="22" Foreground="#B3FFFFFF"
+                   HorizontalAlignment="Left" VerticalAlignment="Center" Margin="42,0,0,0"/>
+    </Grid>
+</Window>

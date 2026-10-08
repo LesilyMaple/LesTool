@@ -49,19 +49,21 @@ dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true 
 
 ## ⚠️ 本机已知环境问题（CET）
 
-本开发机（Win10 19045，补丁停留在 2022-09）上，所有 .NET 10 原生宿主（apphost、
-csc.exe、VBCSCompiler.exe）启动即报
-`Fatal error. Your Windows doesn't fully support CET` 退出。这是 .NET 10 在
-长期未更新的 Windows 10 上的 fail-fast 行为；`DOTNET_CETCompat=0` 与
-runtimeconfig 均无法绕过。已验证的唯一启动路径是 `dotnet exec`（muxer）。
+本开发机（Win10 19045，补丁停留在 2022-09，**系统保持不更新**）上，所有 .NET 10
+原生宿主（apphost、csc.exe、VBCSCompiler.exe）无法启动。已穷举验证：
 
-仓库内的应对（装好 Windows 更新后可全部移除）：
+- apphost 路径（即所有可直接双击的 .NET 10 exe）× 运行时 10.0.0 → 段错误；
+  × 10.0.12 → `Fatal error. Your Windows doesn't fully support CET`。与运行时版本无关，不可修。
+- `dotnet exec`（muxer 路径）× 任意运行时版本 → 完全正常。
+- `DOTNET_CETCompat=0`、`COMPlus_CETCompat=0`、runtimeconfig `System.Runtime.CETCompat=false`
+  均无效（自检发生在托管运行时接管之前）。
 
-- `Directory.Build.props` + `tools/csc-shim/csc.cmd`：让编译走 `dotnet exec csc.dll`，绕过原生 csc.exe
-- `scripts/run.ps1`：开发期用 `dotnet exec` 启动应用
+原因：CPU（Zen 3）支持 CET 硬件特性，但 Win10 需 2024 年前后的服务更新才补齐
+用户态影子栈支持；.NET 10 原生宿主自检不通过即拒绝启动。
 
-**根治办法：安装全部 Windows 更新**（补齐 2024+ 用户态 CET 服务栈后检查即可通过，
-发布出的单文件 exe 也将正常双击运行）。
+**对开发零影响**（构建走 shim、运行走 run.ps1，均已就位）。对本机的唯一影响：
+发布出的单文件 exe 无法在本机双击启动——用 `scripts/run.ps1` 替代。最终用户机器
+（正常更新的 Win10 2024+ 补丁 / Win11）不受影响。
 
 ## 许可
 

@@ -1,0 +1,13 @@
+<Window x:Class="LesTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LesTool 最小启动测试"
+        Width="420" Height="280"
+        WindowStartupLocation="CenterScreen"
+        Background="#202028">
+    <Grid>
+        <TextBlock Text="你好"
+                   FontSize="36" Foreground="White"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Grid>
+</Window>

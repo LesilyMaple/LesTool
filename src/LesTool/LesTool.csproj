@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <InvariantGlobalization>true</InvariantGlobalization>
     <SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <RootNamespace>LesTool</RootNamespace>

@@ -62,8 +62,11 @@ dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true 
 用户态影子栈支持；.NET 10 原生宿主自检不通过即拒绝启动。
 
 **对开发零影响**（构建走 shim、运行走 run.ps1，均已就位）。对本机的唯一影响：
-发布出的单文件 exe 无法在本机双击启动——用 `scripts/run.ps1` 替代。最终用户机器
-（正常更新的 Win10 2024+ 补丁 / Win11）不受影响。
+发布出的单文件 exe 无法在本机双击启动。替代方案：桌面快捷方式走
+`scripts/launch.vbs`（隐藏窗口启动 `dotnet exec`，体验与双击无异，实测可用）。
+最终用户机器（正常更新的 Win10 2024+ 补丁 / Win11）不受影响。
+
+注：经启动器运行时进程名为 `dotnet.exe`（muxer 托管），任务管理器中如此显示属正常。
 
 ## 许可
 

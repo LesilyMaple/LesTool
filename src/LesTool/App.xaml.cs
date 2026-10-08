@@ -1,11 +1,15 @@
 using System.IO;
 using System.Windows;
+using LesTool.Services;
 using Serilog;
 
 namespace LesTool;
 
 public partial class App : Application
 {
+    private MouseHookService? _mouseHook;
+    private RadialWindowController? _radial;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -30,17 +34,30 @@ public partial class App : Application
         AppDomain.CurrentDomain.FirstChanceException += (_, args) =>
             Log.Debug(args.Exception, "首现异常 {Type}", args.Exception.GetType().Name);
 
-        Log.Information("========== 最小启动测试 ==========");
+        Log.Information("========== LesTool 启动 ==========");
 
         var window = new MainWindow();
         MainWindow = window;
+        // 隐藏的轮盘窗口仍算"打开"，OnLastWindowClose 不会触发，这里显式退出
+        window.Closed += (_, _) => Shutdown();
         window.Show();
         Log.Information("主窗口已显示");
+
+        // 轮盘：右键按住拖动超过 5px 显示，松开隐藏
+        var trigger = new RadialTrigger();
+        _radial = new RadialWindowController();
+        _radial.Initialize();
+        trigger.Triggered += point => _radial.ShowAt(point);
+        trigger.Released += () => _radial.Hide();
+
+        _mouseHook = new MouseHookService(trigger);
+        _mouseHook.Start();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
-        Log.Information("========== 退出 ==========");
+        _mouseHook?.Dispose(); // 先停钩子，窗口随后统一销毁
+        Log.Information("========== LesTool 退出 ==========");
         Log.CloseAndFlush();
         base.OnExit(e);
     }

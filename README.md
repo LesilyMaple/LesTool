@@ -1,6 +1,6 @@
 # LesTool
 
-仅 Windows 的开源效率工具：鼠标手势唤起的**悬浮轮盘** + 全局热键唤起的**悬浮多功能面板** + 常驻托盘的**设置页**。
+个人自用的 Windows 效率工具（不分发）：鼠标手势唤起的**悬浮轮盘** + 全局热键唤起的**悬浮多功能面板** + 常驻托盘的**设置页**。
 
 - 目标框架：WPF / `net10.0-windows`
 - UI：[WPF-UI](https://github.com/lepoco/wpfui)（Fluent 3 / Mica / 暗色）
@@ -39,13 +39,14 @@ dotnet build -c Release
 powershell -ExecutionPolicy Bypass -File scripts/run.ps1
 ```
 
-## 发布
+## 发布（自用基本用不到）
+
+日常形态就是 `dotnet build -c Release` + 桌面快捷方式。以下单文件命令保留备查，
+但注意其产物在本机（见 CET 章节）无法启动：
 
 ```powershell
 dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 ```
-
-产物为 `src/LesTool/bin/Release/net10.0-windows/win-x64/publish/LesTool.exe` 单文件便携版。
 
 ## ⚠️ 本机已知环境问题（CET）
 

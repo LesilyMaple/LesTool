@@ -17,3 +17,6 @@ Thumbs.db
 # 工具产物（会话/安全扫描）
 .mimosa/
 .zcode/
+
+# Verified release packages and visual QA
+/artifacts/

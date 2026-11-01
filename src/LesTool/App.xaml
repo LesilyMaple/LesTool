@@ -3,10 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              ShutdownMode="OnLastWindowClose">
     <Application.Resources>
-        <!-- 显式 MergedDictionaries（防展平）；顺序固定：Design 在前、主题在后
-             （后加者优先，主题色可覆盖 Design 同名资源），ThemeManager 只替换主题字典 -->
+        <!-- 显式 MergedDictionaries（防展平）；顺序固定：Tokens（刻度）→ Design（样式，别名引用 Tokens）
+             → 主题（后加者优先，ThemeManager 只替换 Dark/Light 两个字典） -->
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/tokens.xaml"/>
                 <ResourceDictionary Source="Themes/Design.xaml"/>
                 <ResourceDictionary Source="Themes/Dark.xaml"/>
             </ResourceDictionary.MergedDictionaries>

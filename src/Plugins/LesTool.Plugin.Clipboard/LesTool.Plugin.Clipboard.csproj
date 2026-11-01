@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- 命名空间避开末段 Clipboard：否则代码里的 Clipboard 会被解析到本命名空间，压住 System.Windows.Clipboard -->
+    <RootNamespace>LesTool.Plugin.ClipboardHistory</RootNamespace>
+    <AssemblyName>LesTool.Plugin.Clipboard</AssemblyName>
+    <Version>1.0.0</Version>
+    <PluginId>clipboard</PluginId>
+    <HostOutput>$(MSBuildProjectDirectory)\..\..\LesTool\bin\$(Configuration)\net8.0-windows\win-x64</HostOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\LesTool.Platform\LesTool.Platform.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\build\Plugin.Build.targets" />
+
+</Project>

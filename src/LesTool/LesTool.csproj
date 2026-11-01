@@ -21,16 +21,32 @@
     <Resource Include="Assets\app.ico" />
   </ItemGroup>
 
+  <!-- 外置皮肤包：源文件在 Skins\，构建/发布拷到 themes\（运行期 ThemeManager 扫描该目录、支持热重载） -->
   <ItemGroup>
-    <PackageReference Include="WPF-UI" Version="4.3.0" />
+    <Content Include="Skins\**\*.xaml" CopyToOutputDirectory="PreserveNewest"
+             TargetPath="themes\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Serilog" Version="4.4.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LesTool.Platform\LesTool.Platform.csproj" />
+    <ProjectReference Include="..\Plugins\*\*.csproj" ReferenceOutputAssembly="false" Private="false" />
   </ItemGroup>
 
+  <!-- UI 门禁：全库 XAML 扫描（违禁控件/硬编码颜色/数字字号），违者构建失败。
+       规则与白名单见 DESIGN.md「页面控件门禁」；脚本 tools/check_ui.py（自测过检出与退出码）。
+       依赖 python 在 PATH（与 design-tokens 再生成链同一依赖）。 -->
+  <Target Name="UiGate" BeforeTargets="PrepareForBuild">
+    <Exec Command="chcp 65001 &gt;nul &amp;&amp; python &quot;$(MSBuildThisFileDirectory)..\..\tools\check_ui.py&quot;" />
+  </Target>
+
+  <Target Name="DeployPlugins" AfterTargets="Build" Condition="'$(SkipPluginDeploy)' != 'true'">
+    <ItemGroup><BuiltPlugin Include="..\Plugins\*\*.csproj" /></ItemGroup>
+    <MSBuild Projects="@(BuiltPlugin)" Targets="DeployToHost" BuildInParallel="false"
+             Properties="Configuration=$(Configuration);HostOutput=$(TargetDir)" />
+  </Target>
 </Project>

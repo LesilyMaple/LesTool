@@ -10,7 +10,7 @@ namespace LesTool.Platform;
 /// <summary>
 /// 进程图标提取缓存（平台服务）：exe 路径 → SHGetFileInfo 大图标 → 冻结的 BitmapSource。
 /// 提取失败（无权限/文件消失）返回 null，由调用方退回落渲染。
-/// 宿主托盘图标与音量插件的应用行共用。
+/// 音量插件的应用行在用（插件与宿主共用平台服务）。
 /// </summary>
 public static class AppIcon
 {

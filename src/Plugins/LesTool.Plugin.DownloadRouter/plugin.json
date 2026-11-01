@@ -1,0 +1,11 @@
+{
+  "id": "downloads",
+  "name": "下载归档",
+  "version": "1.0.0",
+  "description": "监视下载文件夹，按规则把新文件自动归类到指定文件夹，附搬运账本",
+  "icon": "",
+  "minPlatform": "1.3.0",
+  "entryAssembly": "LesTool.Plugin.DownloadRouter.dll",
+  "entryType": "LesTool.Plugin.DownloadRouter.DownloadRouterPlugin",
+  "apiContract": 1
+}

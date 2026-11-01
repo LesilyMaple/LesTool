@@ -1,0 +1,696 @@
+{
+  "$meta": {
+    "name": "LesTool 外置皮肤包",
+    "source": "与 design-tokens.json 同源管线：色板由 generate_palette.py 生成，语义树 45 键与内置主题同契约（缺省键热加载时回落内置深色），对比度门禁由 tools/emit_themes.py 执行（透明色按实际叠加混合后计算）。",
+    "files": "每个皮肤生成 src/LesTool/Skins/<id>.xaml，构建拷贝到输出 themes\\；运行期 ThemeManager 热加载该目录实现换肤/热重载。",
+    "note": "fluent/paper 为浅色组皮肤；paper 弱文字 #776556 = pw.600/700 中点（§5.3.5 整档微调）",
+    "convention": "8 位十六进制一律 CSS 顺序 #RRGGBBAA（透明度在最后）；写成 Windows 的 #AARRGGBB 会让色相反转（曾致面板/轮盘变酒红）。面板表面默认全不透明（用户 2026-10-21 拍板）；皮肤要磨砂需自带透明度 + acrylic=true"
+  },
+  "glass": {
+    "title": "玻璃拟态",
+    "isLight": false,
+    "acrylic": false,
+    "glassTint": "#0E102766",
+    "glow": {
+      "center": "0.82,0.05",
+      "radius": "0.85,0.60",
+      "color": "#5E50E147"
+    },
+    "primitive": {
+      "color": {
+        "night": {
+          "50": "#ecf7fd",
+          "100": "#dcecf4",
+          "200": "#bdd3df",
+          "300": "#a0b8c8",
+          "400": "#8398b1",
+          "500": "#667799",
+          "600": "#546183",
+          "700": "#424c6e",
+          "800": "#313857",
+          "900": "#202441",
+          "950": "#0e1027"
+        },
+        "coral": {
+          "50": "#fffbf6",
+          "100": "#fff6eb",
+          "200": "#ffe0bb",
+          "300": "#feca8d",
+          "400": "#f09f6c",
+          "500": "#e06b4c",
+          "600": "#ce4a2e",
+          "700": "#af321d",
+          "800": "#8e1b0d",
+          "900": "#6b0800",
+          "950": "#3b0200"
+        }
+      }
+    },
+    "semantic": {
+      "window-background": "{color.night.900}",
+      "window-border-color": "#FFFFFF30",
+      "menu-background": "{color.night.950}",
+      "menu-border-color": "#FFFFFF14",
+      "brand-foreground": "#FFFFFFD9",
+      "text-primary": "#FFFFFFD9",
+      "text-secondary": "#FFFFFFC2",
+      "text-hint": "#FFFFFFA4",
+      "group-foreground": "#FFFFFF9A",
+      "nav-item-foreground": "#FFFFFFB0",
+      "nav-hover-background": "#FFFFFF12",
+      "nav-selected-background": "#FFFFFF24",
+      "nav-selected-foreground": "#FFFFFFF0",
+      "nav-accent": "{color.coral.300}",
+      "accent-foreground": "{color.night.950}",
+      "card-background": "#FFFFFF12",
+      "card-border-color": "#FFFFFF22",
+      "button-background": "#FFFFFF1C",
+      "button-border-color": "#FFFFFF2E",
+      "button-foreground": "#FFFFFFF0",
+      "button-hover-background": "#FFFFFF2A",
+      "button-pressed-background": "#FFFFFF38",
+      "button-primary-background": "{color.coral.600}",
+      "button-primary-hover": "{color.coral.700}",
+      "button-primary-foreground": "#FFFFFFFF",
+      "danger-brush": "{color.danger.200}",
+      "success-brush": "{color.success.300}",
+      "slider-track-brush": "#00000055",
+      "slider-thumb-brush": "#FFFFFFF0",
+      "slider-muted-fill-brush": "#CE4A2E59",
+      "scrollbar-thumb-brush": "#FFFFFFB0",
+      "panel-background": "#252940FF",
+      "player-bar-background": "#101010E6",
+      "overlay-bar-background": "#0E1027E6",
+      "overlay-icon-stroke": "#FFFFFFFF",
+      "overlay-text-brush": "#FFFFFFCC",
+      "overlay-hover-brush": "#FFFFFF1F",
+      "overlay-active-brush": "#FFFFFF33",
+      "overlay-separator": "#FFFFFF33",
+      "overlay-separator-strong": "#FFFFFF4D",
+      "overlay-slider-track": "#FFFFFF33",
+      "overlay-slider-fill": "#FFFFFF80",
+      "radial-sector-active-brush": "#FECA8D66",
+      "caption-close-background": "{color.danger.600}",
+      "caption-close-pressed-background": "{color.danger.700}"
+    },
+    "pairs": [
+      {
+        "name": "主文字@窗口",
+        "fg": "{text-primary}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "次文字@窗口",
+        "fg": "{text-secondary}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "弱文字@窗口",
+        "fg": "{text-hint}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "弱文字@卡片",
+        "fg": "{text-hint}",
+        "bg": [
+          "{window-background}",
+          "{card-background}"
+        ]
+      },
+      {
+        "name": "强调@窗口",
+        "fg": "{nav-accent}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "强调@卡片",
+        "fg": "{nav-accent}",
+        "bg": [
+          "{window-background}",
+          "{card-background}"
+        ]
+      },
+      {
+        "name": "危险@窗口",
+        "fg": "{danger-brush}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "成功@窗口",
+        "fg": "{success-brush}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "导航@侧栏",
+        "fg": "{nav-item-foreground}",
+        "bg": "{menu-background}"
+      },
+      {
+        "name": "选中@侧栏",
+        "fg": "{nav-selected-foreground}",
+        "bg": [
+          "{menu-background}",
+          "{nav-selected-background}"
+        ]
+      },
+      {
+        "name": "按钮字@按钮底",
+        "fg": "{button-foreground}",
+        "bg": [
+          "{window-background}",
+          "{button-background}"
+        ]
+      },
+      {
+        "name": "面板字@面板底",
+        "fg": "{text-primary}",
+        "bg": [
+          "{menu-background}",
+          "{panel-background}"
+        ]
+      },
+      {
+        "name": "主按钮",
+        "fg": "{button-primary-foreground}",
+        "bg": "{button-primary-background}"
+      },
+      {
+        "name": "关闭键",
+        "fg": "#FFFFFFFF",
+        "bg": "{caption-close-background}"
+      }
+    ]
+  },
+  "aurora": {
+    "title": "深空极光",
+    "isLight": false,
+    "acrylic": false,
+    "glow": {
+      "center": "0.82,0.02",
+      "radius": "0.90,0.65",
+      "color": "#5E50E15C"
+    },
+    "primitive": {
+      "color": {
+        "space": {
+          "50": "#edf6fa",
+          "100": "#dce9ef",
+          "200": "#bed1da",
+          "300": "#a2b6c3",
+          "400": "#8798ab",
+          "500": "#6b7994",
+          "600": "#58637e",
+          "700": "#464d68",
+          "800": "#333851",
+          "900": "#21243b",
+          "950": "#0f1123"
+        },
+        "violet": {
+          "50": "#faf6ff",
+          "100": "#f4ebff",
+          "200": "#e4cdff",
+          "300": "#d3afff",
+          "400": "#b391ff",
+          "500": "#8b7cf6",
+          "600": "#5e50e1",
+          "700": "#362ac5",
+          "800": "#1b1399",
+          "900": "#04006b",
+          "950": "#01003b"
+        }
+      }
+    },
+    "semantic": {
+      "window-background": "{color.space.900}",
+      "window-border-color": "#FFFFFF22",
+      "menu-background": "{color.space.950}",
+      "menu-border-color": "#FFFFFF12",
+      "brand-foreground": "{color.space.200}",
+      "text-primary": "{color.space.200}",
+      "text-secondary": "{color.space.300}",
+      "text-hint": "#94A7B7",
+      "group-foreground": "#94A7B7",
+      "nav-item-foreground": "{color.space.300}",
+      "nav-hover-background": "#FFFFFF10",
+      "nav-selected-background": "#8B7CF629",
+      "nav-selected-foreground": "{color.space.200}",
+      "nav-accent": "{color.violet.400}",
+      "accent-foreground": "{color.space.950}",
+      "card-background": "#FFFFFF0E",
+      "card-border-color": "#FFFFFF1E",
+      "button-background": "#FFFFFF1A",
+      "button-border-color": "#FFFFFF2C",
+      "button-foreground": "#F0F2FC",
+      "button-hover-background": "#FFFFFF28",
+      "button-pressed-background": "#FFFFFF36",
+      "button-primary-background": "{color.violet.500}",
+      "button-primary-hover": "{color.violet.600}",
+      "button-primary-foreground": "{color.space.950}",
+      "danger-brush": "{color.danger.200}",
+      "success-brush": "{color.success.300}",
+      "slider-track-brush": "#00000055",
+      "slider-thumb-brush": "#E9EBF6",
+      "slider-muted-fill-brush": "#8B7CF659",
+      "scrollbar-thumb-brush": "#FFFFFFA8",
+      "panel-background": "#1C1E2EFF",
+      "player-bar-background": "#101010E6",
+      "overlay-bar-background": "#0F1123E6",
+      "overlay-icon-stroke": "#FFFFFFFF",
+      "overlay-text-brush": "#FFFFFFCC",
+      "overlay-hover-brush": "#FFFFFF1F",
+      "overlay-active-brush": "#FFFFFF33",
+      "overlay-separator": "#FFFFFF33",
+      "overlay-separator-strong": "#FFFFFF4D",
+      "overlay-slider-track": "#FFFFFF33",
+      "overlay-slider-fill": "#FFFFFF80",
+      "radial-sector-active-brush": "#B391FF66",
+      "caption-close-background": "{color.danger.600}",
+      "caption-close-pressed-background": "{color.danger.700}"
+    },
+    "pairs": [
+      {
+        "name": "主文字@窗口",
+        "fg": "{text-primary}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "次文字@窗口",
+        "fg": "{text-secondary}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "弱文字@窗口",
+        "fg": "{text-hint}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "弱文字@卡片",
+        "fg": "{text-hint}",
+        "bg": [
+          "{window-background}",
+          "{card-background}"
+        ]
+      },
+      {
+        "name": "强调@窗口",
+        "fg": "{nav-accent}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "强调@卡片",
+        "fg": "{nav-accent}",
+        "bg": [
+          "{window-background}",
+          "{card-background}"
+        ]
+      },
+      {
+        "name": "危险@窗口",
+        "fg": "{danger-brush}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "成功@窗口",
+        "fg": "{success-brush}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "导航@侧栏",
+        "fg": "{nav-item-foreground}",
+        "bg": "{menu-background}"
+      },
+      {
+        "name": "选中@侧栏",
+        "fg": "{nav-selected-foreground}",
+        "bg": [
+          "{menu-background}",
+          "{nav-selected-background}"
+        ]
+      },
+      {
+        "name": "按钮字@按钮底",
+        "fg": "{button-foreground}",
+        "bg": [
+          "{window-background}",
+          "{button-background}"
+        ]
+      },
+      {
+        "name": "面板字@面板底",
+        "fg": "{text-primary}",
+        "bg": [
+          "{menu-background}",
+          "{panel-background}"
+        ]
+      },
+      {
+        "name": "主按钮",
+        "fg": "{button-primary-foreground}",
+        "bg": "{button-primary-background}"
+      },
+      {
+        "name": "关闭键",
+        "fg": "#FFFFFFFF",
+        "bg": "{caption-close-background}"
+      }
+    ]
+  },
+  "fluent": {
+    "title": "Fluent 2",
+    "isLight": true,
+    "acrylic": false,
+    "primitive": {
+      "color": {
+        "fn": {
+          "50": "#f5f9fb",
+          "100": "#ecf1f4",
+          "200": "#cdd6da",
+          "300": "#b0babf",
+          "400": "#929ba5",
+          "500": "#757c8a",
+          "600": "#656a78",
+          "700": "#545966",
+          "800": "#444754",
+          "900": "#333642",
+          "950": "#1b1c26"
+        },
+        "fb": {
+          "50": "#f6feff",
+          "100": "#ebfcff",
+          "200": "#a0f2ff",
+          "300": "#56d5ff",
+          "400": "#1aa4f0",
+          "500": "#0067c0",
+          "600": "#0051ab",
+          "700": "#003e96",
+          "800": "#002e80",
+          "900": "#00206b",
+          "950": "#000c3b"
+        }
+      }
+    },
+    "semantic": {
+      "window-background": "{color.fn.100}",
+      "window-border-color": "{color.fn.300}",
+      "menu-background": "{color.fn.200}",
+      "menu-border-color": "{color.fn.300}",
+      "brand-foreground": "{color.fn.900}",
+      "text-primary": "{color.fn.900}",
+      "text-secondary": "{color.fn.700}",
+      "text-hint": "{color.fn.600}",
+      "group-foreground": "{color.fn.600}",
+      "nav-item-foreground": "{color.fn.700}",
+      "nav-hover-background": "{color.fn.300}",
+      "nav-selected-background": "{color.fn.300}",
+      "nav-selected-foreground": "{color.fn.950}",
+      "nav-accent": "{color.fb.600}",
+      "accent-foreground": "#FFFFFFFF",
+      "card-background": "{color.fn.50}",
+      "card-border-color": "{color.fn.300}",
+      "button-background": "{color.fn.50}",
+      "button-border-color": "{color.fn.300}",
+      "button-foreground": "{color.fn.900}",
+      "button-hover-background": "{color.fn.200}",
+      "button-pressed-background": "{color.fn.300}",
+      "button-primary-background": "{color.fb.500}",
+      "button-primary-hover": "{color.fb.600}",
+      "button-primary-foreground": "#FFFFFFFF",
+      "danger-brush": "{color.danger.600}",
+      "success-brush": "{color.success.800}",
+      "slider-track-brush": "{color.fn.200}",
+      "slider-thumb-brush": "{color.fn.800}",
+      "slider-muted-fill-brush": "#0051AB59",
+      "scrollbar-thumb-brush": "{color.fn.500}",
+      "panel-background": "#ECF1F4FF",
+      "player-bar-background": "#ECF1F4E6",
+      "overlay-bar-background": "#ECF1F4E6",
+      "overlay-icon-stroke": "#333642FF",
+      "overlay-text-brush": "#333642CC",
+      "overlay-hover-brush": "#1B1C2614",
+      "overlay-active-brush": "#1B1C261F",
+      "overlay-separator": "#1B1C2633",
+      "overlay-separator-strong": "#1B1C264D",
+      "overlay-slider-track": "#1B1C2633",
+      "overlay-slider-fill": "#1B1C2659",
+      "radial-sector-active-brush": "#0051AB66",
+      "caption-close-background": "{color.danger.600}",
+      "caption-close-pressed-background": "{color.danger.700}"
+    },
+    "pairs": [
+      {
+        "name": "主文字@窗口",
+        "fg": "{text-primary}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "次文字@窗口",
+        "fg": "{text-secondary}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "弱文字@窗口",
+        "fg": "{text-hint}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "弱文字@卡片",
+        "fg": "{text-hint}",
+        "bg": [
+          "{window-background}",
+          "{card-background}"
+        ]
+      },
+      {
+        "name": "强调@窗口",
+        "fg": "{nav-accent}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "强调@卡片",
+        "fg": "{nav-accent}",
+        "bg": [
+          "{window-background}",
+          "{card-background}"
+        ]
+      },
+      {
+        "name": "危险@窗口",
+        "fg": "{danger-brush}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "成功@窗口",
+        "fg": "{success-brush}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "导航@侧栏",
+        "fg": "{nav-item-foreground}",
+        "bg": "{menu-background}"
+      },
+      {
+        "name": "选中@侧栏",
+        "fg": "{nav-selected-foreground}",
+        "bg": [
+          "{menu-background}",
+          "{nav-selected-background}"
+        ]
+      },
+      {
+        "name": "按钮字@按钮底",
+        "fg": "{button-foreground}",
+        "bg": [
+          "{window-background}",
+          "{button-background}"
+        ]
+      },
+      {
+        "name": "面板字@面板底",
+        "fg": "{text-primary}",
+        "bg": [
+          "{menu-background}",
+          "{panel-background}"
+        ]
+      },
+      {
+        "name": "主按钮",
+        "fg": "{button-primary-foreground}",
+        "bg": "{button-primary-background}"
+      },
+      {
+        "name": "关闭键",
+        "fg": "#FFFFFFFF",
+        "bg": "{caption-close-background}"
+      }
+    ]
+  },
+  "paper": {
+    "title": "暖纸陶土",
+    "isLight": true,
+    "acrylic": false,
+    "primitive": {
+      "color": {
+        "pw": {
+          "50": "#fcfbf2",
+          "100": "#f5f3e6",
+          "200": "#dddac7",
+          "300": "#c4bea8",
+          "400": "#aba08b",
+          "500": "#91826e",
+          "600": "#806f5e",
+          "700": "#6e5c4f",
+          "800": "#5c4a3f",
+          "900": "#4a3830",
+          "950": "#2b1d18"
+        },
+        "pt": {
+          "50": "#fffcf6",
+          "100": "#fff7eb",
+          "200": "#fce4bc",
+          "300": "#ebcc9b",
+          "400": "#d9a67b",
+          "500": "#c67b5c",
+          "600": "#b25e43",
+          "700": "#964531",
+          "800": "#792d1f",
+          "900": "#5c170f",
+          "950": "#3b0400"
+        }
+      }
+    },
+    "semantic": {
+      "window-background": "{color.pw.100}",
+      "window-border-color": "{color.pw.300}",
+      "menu-background": "{color.pw.200}",
+      "menu-border-color": "{color.pw.300}",
+      "brand-foreground": "{color.pw.900}",
+      "text-primary": "{color.pw.900}",
+      "text-secondary": "{color.pw.700}",
+      "text-hint": "#776556",
+      "group-foreground": "#776556",
+      "nav-item-foreground": "{color.pw.700}",
+      "nav-hover-background": "{color.pw.300}",
+      "nav-selected-background": "{color.pw.300}",
+      "nav-selected-foreground": "{color.pw.950}",
+      "nav-accent": "{color.pt.700}",
+      "accent-foreground": "{color.pw.50}",
+      "card-background": "{color.pw.50}",
+      "card-border-color": "{color.pw.300}",
+      "button-background": "{color.pw.50}",
+      "button-border-color": "{color.pw.300}",
+      "button-foreground": "{color.pw.900}",
+      "button-hover-background": "{color.pw.200}",
+      "button-pressed-background": "{color.pw.300}",
+      "button-primary-background": "{color.pt.700}",
+      "button-primary-hover": "{color.pt.800}",
+      "button-primary-foreground": "{color.pw.50}",
+      "danger-brush": "{color.danger.600}",
+      "success-brush": "{color.success.700}",
+      "slider-track-brush": "{color.pw.200}",
+      "slider-thumb-brush": "{color.pw.800}",
+      "slider-muted-fill-brush": "#96453159",
+      "scrollbar-thumb-brush": "{color.pw.500}",
+      "panel-background": "#F5F3E6FF",
+      "player-bar-background": "#F5F3E6E6",
+      "overlay-bar-background": "#F5F3E6E6",
+      "overlay-icon-stroke": "#2B1D18FF",
+      "overlay-text-brush": "#2B1D18CC",
+      "overlay-hover-brush": "#2B1D1814",
+      "overlay-active-brush": "#2B1D181F",
+      "overlay-separator": "#2B1D1833",
+      "overlay-separator-strong": "#2B1D184D",
+      "overlay-slider-track": "#2B1D1833",
+      "overlay-slider-fill": "#2B1D1859",
+      "radial-sector-active-brush": "#96453166",
+      "caption-close-background": "{color.danger.600}",
+      "caption-close-pressed-background": "{color.danger.700}"
+    },
+    "pairs": [
+      {
+        "name": "主文字@窗口",
+        "fg": "{text-primary}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "次文字@窗口",
+        "fg": "{text-secondary}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "弱文字@窗口",
+        "fg": "{text-hint}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "弱文字@卡片",
+        "fg": "{text-hint}",
+        "bg": [
+          "{window-background}",
+          "{card-background}"
+        ]
+      },
+      {
+        "name": "强调@窗口",
+        "fg": "{nav-accent}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "强调@卡片",
+        "fg": "{nav-accent}",
+        "bg": [
+          "{window-background}",
+          "{card-background}"
+        ]
+      },
+      {
+        "name": "危险@窗口",
+        "fg": "{danger-brush}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "成功@窗口",
+        "fg": "{success-brush}",
+        "bg": "{window-background}"
+      },
+      {
+        "name": "导航@侧栏",
+        "fg": "{nav-item-foreground}",
+        "bg": "{menu-background}"
+      },
+      {
+        "name": "选中@侧栏",
+        "fg": "{nav-selected-foreground}",
+        "bg": [
+          "{menu-background}",
+          "{nav-selected-background}"
+        ]
+      },
+      {
+        "name": "按钮字@按钮底",
+        "fg": "{button-foreground}",
+        "bg": [
+          "{window-background}",
+          "{button-background}"
+        ]
+      },
+      {
+        "name": "面板字@面板底",
+        "fg": "{text-primary}",
+        "bg": [
+          "{menu-background}",
+          "{panel-background}"
+        ]
+      },
+      {
+        "name": "主按钮",
+        "fg": "{button-primary-foreground}",
+        "bg": "{button-primary-background}"
+      },
+      {
+        "name": "关闭键",
+        "fg": "#FFFFFFFF",
+        "bg": "{caption-close-background}"
+      }
+    ]
+  }
+}

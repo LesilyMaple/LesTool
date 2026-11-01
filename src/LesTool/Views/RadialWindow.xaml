@@ -9,10 +9,21 @@
         ShowActivated="False"
         ResizeMode="NoResize"
         Width="320" Height="320">
-    <Grid>
-        <Ellipse Fill="#E6202028"/>
-        <TextBlock Text="轮盘"
-                   Foreground="White" FontSize="22"
-                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <!-- 全部内容不参与命中测试：轮盘期间鼠标事件由钩子通道接管（按住右键时本窗口拿不到输入，
+         收起后窗口即隐藏，杜绝任何一次点击落进本窗口 -->
+    <Grid IsHitTestVisible="False">
+        <!-- 底盘（功能窗 Overlay 族：随主题的深色半透明表面）；尺寸由代码随轮盘大小设置 -->
+        <Ellipse x:Name="BackdropEllipse" Fill="{DynamicResource PanelBackground}"/>
+        <!-- 扇区与槽位标签：代码绘制（RadialWindow.xaml.cs + RadialGeometry） -->
+        <Canvas x:Name="RingCanvas"/>
+        <!-- 中央信息区（小圆，只显示所指动作标题）：底色由代码按扇区常态合成色铺（整盘一色），
+             靠亮一圈描边区分，画在扇区之上保证描边完整；尺寸由代码设置 -->
+        <Ellipse x:Name="CenterEllipse" Stroke="{DynamicResource OverlaySeparatorStrong}" StrokeThickness="1.5"
+                 Fill="{DynamicResource OverlayHoverBrush}" Width="72" Height="72"/>
+        <!-- 中央提示：仅当前悬停动作的标题 -->
+        <TextBlock x:Name="CenterTitle" Text="" TextAlignment="Center" TextTrimming="CharacterEllipsis"
+                   FontSize="{DynamicResource FontSizeCaption}"
+                   Foreground="{DynamicResource OverlayIconStroke}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" Width="64"/>
     </Grid>
 </Window>

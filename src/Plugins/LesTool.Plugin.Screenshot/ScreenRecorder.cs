@@ -32,6 +32,9 @@ internal static class ScreenRecorder
         new("libx264", "-preset veryfast -crf 23", false),
     };
 
+    private static bool _shuttingDown;
+    public static void Initialize() => _shuttingDown = false;
+
     private static RecState _state = RecState.Idle;
     private static Rect _regionPhys = Rect.Empty;  // 录制区域（全局物理像素）
     private static Rect _monitorPhys;              // 所在显示器（用于算屏内偏移）
@@ -58,7 +61,7 @@ internal static class ScreenRecorder
     /// <summary>开始一次录屏。region 为全局物理像素矩形（来自截图会话的选区）。</summary>
     public static void Begin(Rect region)
     {
-        if (IsBusy)
+        if (_shuttingDown || IsBusy)
         {
             Log.Warning("已有录制进行中，忽略新的录制请求");
             return;
@@ -168,6 +171,7 @@ internal static class ScreenRecorder
 
     private static void OnSegmentExited(object? sender, EventArgs e)
     {
+        if (_shuttingDown) return;
         var proc = (Process)sender!;
         // Exited 在线程池线程回调，封送回 UI 线程
         Application.Current?.Dispatcher.BeginInvoke(() => SegmentFinished(proc, intentional: false));
@@ -176,7 +180,7 @@ internal static class ScreenRecorder
     /// <summary>段进程结束的统一处理。同步路径与 Exited 回调都可能进来，_ffmpeg 判重保证只跑一次。</summary>
     private static void SegmentFinished(Process proc, bool intentional)
     {
-        if (_ffmpeg != proc)
+        if (_shuttingDown || _ffmpeg != proc)
             return; // 已被同步路径处理，或属于上一次会话
         _ffmpeg = null;
         _segmentWatch.Stop();
@@ -238,19 +242,41 @@ internal static class ScreenRecorder
     }
 
     /// <summary>应用退出时调用：优雅停 ffmpeg，保留临时段文件供手工挽救。</summary>
-    public static void Shutdown()
+    private static Process? BeginShutdown()
     {
-        if (_ffmpeg is { } proc)
+        if (_shuttingDown) return null;
+        _shuttingDown = true;
+        var process = _ffmpeg; _ffmpeg = null;
+        if (process is not null) process.Exited -= OnSegmentExited;
+        if (_state != RecState.Idle && _sessionDir is not null)
+            Log.Warning("退出时录制中断，片段保留于 {Dir}", _sessionDir);
+        _state = RecState.Idle; _segmentWatch.Stop();
+        if (_frame is not null) { _frame.CountdownDone -= OnCountdownDone; _frame.Close(); _frame = null; }
+        _bar?.Close(); _bar = null;
+        try { process?.StandardInput.WriteLine("q"); } catch (Exception error) { Log.Debug(error, "录制进程已退出"); }
+        return process;
+    }
+    public static async Task ShutdownAsync()
+    {
+        var process = BeginShutdown(); if (process is null) return;
+        using (process)
         {
-            try { proc.StandardInput.WriteLine("q"); }
-            catch { /* 已退出 */ }
-            if (!proc.WaitForExit(2000))
+            try { await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(false); }
+            catch (TimeoutException)
             {
-                try { proc.Kill(); } catch { /* 已退出 */ }
+                try { process.Kill(); await process.WaitForExitAsync().ConfigureAwait(false); }
+                catch (InvalidOperationException) { }
             }
         }
-        if (_state != RecState.Idle && _sessionDir is not null)
-            Log.Warning("应用退出时录制中断，已录段落保留在 {Dir}", _sessionDir);
+    }
+    public static void Shutdown()
+    {
+        var process = BeginShutdown(); if (process is null) return;
+        using (process)
+        {
+            if (!process.WaitForExit(2000))
+                try { process.Kill(); process.WaitForExit(); } catch (InvalidOperationException) { }
+        }
     }
 
     #endregion

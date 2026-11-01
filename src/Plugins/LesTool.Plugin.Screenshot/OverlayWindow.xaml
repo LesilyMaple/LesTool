@@ -169,6 +169,11 @@
                                         ToolTip="文字识别" Click="OnOcrClick">
                                     <Path Data="{StaticResource IconOcr}" Style="{StaticResource TbIcon}"/>
                                 </Button>
+                                <!-- 文字占位：图标（Lucide 风格 SVG，走 svg2xaml 流水线）到位后换 Path IconQrCode -->
+                                <Button x:Name="BtnQr" Style="{StaticResource TbBtn}"
+                                        ToolTip="识别二维码" Click="OnQrClick">
+                                    <TextBlock Text="二维码"/>
+                                </Button>
                             </StackPanel>
 
                             <Rectangle Width="1" Margin="7,3" Fill="{DynamicResource OverlaySeparatorStrong}"/>
@@ -237,26 +242,6 @@
                         <StackPanel x:Name="ColorSwatches" Orientation="Horizontal"/>
                     </Border>
                 </StackPanel>
-            </Border>
-            <!-- OCR 结果面板：接在选区右侧（放不下翻左侧） -->
-            <Border x:Name="OcrPanel" Background="#E6101010" CornerRadius="4"
-                    Width="300" Visibility="Collapsed" Cursor="Arrow">
-                <DockPanel>
-                    <Border DockPanel.Dock="Bottom" Background="#22000000" Padding="8,4">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <TextBlock x:Name="OcrStat" Foreground="#FFAAAAAA" FontSize="11"
-                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <Button Content="复制全部" Width="64"
-                                    Background="#2E9E5B" Foreground="White"
-                                    Click="OnOcrCopyAllClick"/>
-                            <Button Content="收起" Width="40" Margin="4,0,0,0"
-                                    Foreground="White" Click="OnOcrCloseClick"/>
-                        </StackPanel>
-                    </Border>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4,4,4,2">
-                        <StackPanel x:Name="OcrLines"/>
-                    </ScrollViewer>
-                </DockPanel>
             </Border>
             <!-- 放大镜 + 取色器：框选阶段跟随光标，不参与命中 -->
             <Border x:Name="Loupe" Background="#E6101010" CornerRadius="4" Padding="4"

@@ -44,21 +44,21 @@
                                 </Trigger.ExitActions>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Hover" Property="Background" Value="{DynamicResource NavSelectedBackground}"/>
+                                <Setter TargetName="Hover" Property="Background" Value="{DynamicResource ButtonPressedBackground}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        <!-- 关闭按钮：hover 红色圆角块淡入（Windows 惯例） -->
+        <!-- 关闭按钮：hover 红色圆角块淡入（Windows 惯例；色 = 主题键 CaptionCloseBackground） -->
         <Style x:Key="CaptionCloseButtonStyle" TargetType="Button" BasedOn="{StaticResource CaptionButtonStyle}">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid Background="Transparent">
                             <Border x:Name="Hover" CornerRadius="{StaticResource CornerRadiusControl}"
-                                    Background="#C42B1C" Opacity="0" IsHitTestVisible="False"/>
+                                    Background="{DynamicResource CaptionCloseBackground}" Opacity="0" IsHitTestVisible="False"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>
                         <ControlTemplate.Triggers>
@@ -84,7 +84,7 @@
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Hover" Property="Background" Value="#B2271B"/>
+                                <Setter TargetName="Hover" Property="Background" Value="{DynamicResource CaptionClosePressedBackground}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -94,7 +94,8 @@
         </Style>
     </UserControl.Resources>
 
-    <DockPanel Background="{DynamicResource WindowBackground}">
+    <!-- 背景透明：直接透出窗口底色/皮肤氛围光（纯色主题观感不变；玻璃皮肤不再出现色带断层） -->
+    <DockPanel Background="Transparent">
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
             <Button Style="{StaticResource CaptionButtonStyle}" Click="OnMinimizeClick" ToolTip="最小化">
                 <!-- 线条图标必须给显式 10x10 画布：纯水平线几何高度为 0，靠几何居中会偏 -->
@@ -126,7 +127,7 @@
                       StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
             </Button>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
             <Image Source="pack://application:,,,/Assets/app.ico"
                    Width="16" Height="16" VerticalAlignment="Center"
                    RenderOptions.BitmapScalingMode="HighQuality"/>

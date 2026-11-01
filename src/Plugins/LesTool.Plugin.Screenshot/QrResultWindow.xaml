@@ -1,0 +1,44 @@
+<Window x:Class="LesTool.Plugin.Screenshot.QrResultWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:LesTool.Platform.Controls;assembly=LesTool.Platform"
+        Title="LesTool 二维码"
+        ResizeMode="CanResize"
+        Width="480" SizeToContent="Height"
+        MinWidth="380" MinHeight="160" MaxHeight="480"
+        WindowStartupLocation="CenterScreen"
+        Focusable="True" PreviewKeyDown="OnPreviewKeyDown"
+        Style="{StaticResource LesWindowStyle}">
+    <!-- 紧凑结果卡：二维码一张图一个码，无需 OCR 的左图右文对照。
+         高度随内容自适应，封顶 MaxHeight 超限滚动。 -->
+    <DockPanel>
+        <controls:CaptionBar DockPanel.Dock="Top"/>
+        <Border Background="{DynamicResource MenuBackground}" Padding="16,10,16,14">
+            <DockPanel>
+                <!-- 底栏：类型统计 + 打开/复制（打开仅 http/https，代码控制显隐） -->
+                <Border DockPanel.Dock="Bottom" Padding="0,10,0,0">
+                    <DockPanel>
+                        <Button x:Name="BtnCopy" Content="复制" DockPanel.Dock="Right" Padding="14,0"
+                                Background="Transparent" Foreground="{DynamicResource TextPrimary}"
+                                BorderBrush="{DynamicResource MenuBorderColor}" BorderThickness="1"
+                                Click="OnCopyClick"/>
+                        <Button x:Name="BtnOpen" Content="打开链接" DockPanel.Dock="Right" Padding="14,0"
+                                Margin="0,0,8,0" Background="#2E9E5B" Foreground="White"
+                                Click="OnOpenClick"/>
+                        <TextBlock x:Name="QrStat" Foreground="{DynamicResource TextSecondary}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
+                </Border>
+                <!-- 内容全文：只读可选中，高频动作是复制（打开即全选好 Ctrl+C） -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBox x:Name="QrText" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"
+                             Background="Transparent" BorderThickness="0" Padding="0"
+                             Foreground="{DynamicResource TextPrimary}"
+                             FontSize="14" Cursor="IBeam"/>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </DockPanel>
+</Window>

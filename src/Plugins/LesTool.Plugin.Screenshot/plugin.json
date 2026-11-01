@@ -2,7 +2,10 @@
   "id": "screenshot",
   "name": "截图",
   "version": "1.0.0",
-  "minPlatform": "1.0.0",
+  "description": "框选截图、窗口识别截图与图片二维码识别",
+  "icon": "",
+  "minPlatform": "1.3.0",
   "entryAssembly": "LesTool.Plugin.Screenshot.dll",
-  "entryType": "LesTool.Plugin.Screenshot.ScreenshotPlugin"
+  "entryType": "LesTool.Plugin.Screenshot.ScreenshotPlugin",
+  "apiContract": 1
 }

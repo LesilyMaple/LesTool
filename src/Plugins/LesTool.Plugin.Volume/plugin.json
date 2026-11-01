@@ -2,7 +2,10 @@
   "id": "volume",
   "name": "音量混音器",
   "version": "1.0.0",
-  "minPlatform": "1.0.0",
+  "description": "按应用调节音量与静音的混音器浮窗",
+  "icon": "",
+  "minPlatform": "1.3.0",
   "entryAssembly": "LesTool.Plugin.Volume.dll",
-  "entryType": "LesTool.Plugin.Volume.VolumeMixerPlugin"
+  "entryType": "LesTool.Plugin.Volume.VolumeMixerPlugin",
+  "apiContract": 1
 }

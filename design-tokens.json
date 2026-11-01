@@ -1,0 +1,389 @@
+{
+  "$meta": {
+    "name": "LesTool Design System",
+    "style": "Swiss Precision — Minimalism & Swiss Style × 深色优先",
+    "style_source": "ui-ux-pro-max: styles.csv minimalism-and-swiss-style + typography.csv 'Modern Dark Cinema' 气质（WPF 落地为 Segoe UI + Microsoft YaHei，zh-CN 桌面规则）",
+    "decided": "2026-10-21",
+    "decision": "用户未指定参考，由推荐方向定案：OLED 风排除（浅色主题 not-recommended），Flat 青绿风排除（网页创业气质，与效率工具不符）。延续旧版靛蓝 accent 色相（#7C9AFF/#4C6FE0 家族）以 base #4C6FE0 重新生成整档。 2026-10-21 二次调整（散光舒适度）：黑白两端向中间收（浅端 lightest 96→91、深端 darkest 21→23），深色文字三档对比 14.7/11.2/8.2 → 约 10/7.5/5.8，浅色 14.7/7.9/5.7 → 约 9.8/5.8/4.8；危险/成功色随之各降一档（贴 4.5 底线但全过）。",
+    "layers": [
+      "primitive：算法生成的原始刻度（generate_palette.py §5.3.3/§5.4/§5.5.1）+ 书定标尺（字号/间距/圆角/字重/阴影）",
+      "semantic：dark/light 两棵语义树，键名即 WPF 消费端键名（TextPrimary、NavAccent…），与旧契约一致",
+      "WPF 落地：Themes/tokens.xaml（emit_tokens.py 生成）+ Themes/Dark|Light.xaml（tools/emit_themes.py 生成）+ Themes/Design.xaml（手写隐式样式；旧契约常量键 FontSize*/CornerRadius*/ControlHeight/CaptionHeight 以 StaticResource 别名指向 tokens.xaml，零重复）"
+    ],
+    "invariants": [
+      "所有数值唯一来源 = 本文件。禁止手改 tokens.xaml / Dark.xaml / Light.xaml；改本文件后重新生成",
+      "文字只许两字重：weight.normal 400 / weight.emphasis 600",
+      "文字只许三档对比层级，且每档对所在背景 ≥4.5:1（pairs 矩阵门禁，改值必须复跑 check_contrast）",
+      "间距一律 space 刻度（4/8/12/16/24/32/48/64）；<4px 的微间隙视作描边级，不受此限",
+      "描边一律 1px（选中/强调环 2px）；圆角只许 radius.control / radius.overlay 两档",
+      "全局唯一强调色 = primary 族（WPF 键 NavAccent）；危险/成功色只作语义，不作装饰"
+    ],
+    "regen": [
+      "python \"C:/Users/armstrong/.agents/skills/refactoring-ui/scripts/generate_palette.py\" --grey --temperature cool --lightest 91 --darkest 23 --extended --name neutral --json",
+      "python \"C:/Users/armstrong/.agents/skills/refactoring-ui/scripts/generate_palette.py\" --base '#4C6FE0' --extended --name primary --json",
+      "python \"C:/Users/armstrong/.agents/skills/refactoring-ui/scripts/generate_palette.py\" --base '#D13438' --toward cool --extended --name danger --json",
+      "python \"C:/Users/armstrong/.agents/skills/refactoring-ui/scripts/generate_palette.py\" --base '#2E9E5B' --extended --name success --json",
+      "python \"C:/Users/armstrong/.agents/skills/refactoring-ui/scripts/emit_tokens.py\" design-tokens.json --format xaml --out src/LesTool/Themes",
+      "python \"C:/Users/armstrong/.agents/skills/refactoring-ui/scripts/emit_tokens.py\" design-tokens.json --format preview --out docs",
+      "python tools/emit_themes.py",
+      "python \"C:/Users/armstrong/.agents/skills/refactoring-ui/scripts/check_contrast.py\" --matrix design-tokens.json",
+      "design-skins.json 维护皮肤（tools/emit_themes.py 一并读取并生成 src/LesTool/Skins/*.xaml + 对比度门禁）"
+    ]
+  },
+  "primitive": {
+    "color": {
+      "neutral": {
+        "50": "#f0f6fa",
+        "100": "#e1eaef",
+        "200": "#c4d1d8",
+        "300": "#a8b6c0",
+        "400": "#8c99a7",
+        "500": "#707a8f",
+        "600": "#60687d",
+        "700": "#50566a",
+        "800": "#404558",
+        "900": "#303345",
+        "950": "#181929"
+      },
+      "primary": {
+        "50": "#f6fbff",
+        "100": "#ebf6ff",
+        "200": "#bbe2ff",
+        "300": "#8dcdfe",
+        "400": "#6ca2f0",
+        "500": "#4c6fe0",
+        "600": "#2e4dce",
+        "700": "#1d34af",
+        "800": "#0d1d8e",
+        "900": "#00096b",
+        "950": "#00033b"
+      },
+      "danger": {
+        "50": "#fff6f9",
+        "100": "#ffebf2",
+        "200": "#ffb1cd",
+        "300": "#f780ab",
+        "400": "#e5597c",
+        "500": "#d13438",
+        "600": "#ba2528",
+        "700": "#a1181a",
+        "800": "#860b0d",
+        "900": "#6b0001",
+        "950": "#3b0000"
+      },
+      "success": {
+        "50": "#f6fffd",
+        "100": "#ebfffa",
+        "200": "#aaf8e3",
+        "300": "#7be0c0",
+        "400": "#4ec58f",
+        "500": "#2e9e5b",
+        "600": "#258f4a",
+        "700": "#1c7f3b",
+        "800": "#14702b",
+        "900": "#0c5f1d",
+        "950": "#003b07"
+      },
+      "functional": {
+        "mask": "#00000096",
+        "controlbar": "#101010E6",
+        "record-red": "#E53935FF",
+        "record-base": "#3A3A4AB3",
+        "save-green": "#2E9E5BFF"
+      }
+    },
+    "text": {
+      "caption": 12,
+      "body": 14,
+      "subtitle": 18,
+      "title": 24
+    },
+    "weight": {
+      "normal": 400,
+      "emphasis": 600
+    },
+    "space": {
+      "4": 4,
+      "8": 8,
+      "12": 12,
+      "16": 16,
+      "24": 24,
+      "32": 32,
+      "48": 48,
+      "64": 64
+    },
+    "radius": {
+      "control": 6,
+      "overlay": 10
+    },
+    "size": {
+      "control-height": 32,
+      "caption-height": 40
+    },
+    "font": {
+      "sans": "Segoe UI, Microsoft YaHei",
+      "mono": "Consolas"
+    },
+    "shadow": {
+      "flyout": "0 5px 15px hsla(0,0%,0%,.2)",
+      "panel": "0 10px 24px hsla(0,0%,0%,.2)"
+    }
+  },
+  "semantic": {
+    "color": {
+      "dark": {
+        "window-background": "{color.neutral.900}",
+        "window-border-color": "{color.neutral.700}",
+        "menu-background": "{color.neutral.950}",
+        "menu-border-color": "{color.neutral.800}",
+        "brand-foreground": "{color.neutral.100}",
+        "text-primary": "{color.neutral.100}",
+        "text-secondary": "{color.neutral.200}",
+        "text-hint": "{color.neutral.300}",
+        "group-foreground": "{color.neutral.300}",
+        "nav-item-foreground": "{color.neutral.300}",
+        "nav-hover-background": "{color.neutral.800}",
+        "nav-selected-background": "{color.neutral.700}",
+        "nav-selected-foreground": "{color.neutral.50}",
+        "nav-accent": "{color.primary.300}",
+        "accent-foreground": "{color.neutral.950}",
+        "card-background": "{color.neutral.800}",
+        "card-border-color": "{color.neutral.700}",
+        "button-background": "{color.neutral.700}",
+        "button-border-color": "{color.neutral.600}",
+        "button-foreground": "{color.neutral.50}",
+        "button-hover-background": "{color.neutral.600}",
+        "button-pressed-background": "{color.neutral.500}",
+        "button-primary-background": "{color.primary.600}",
+        "button-primary-hover": "{color.primary.700}",
+        "button-primary-foreground": "{color.neutral.50}",
+        "danger-brush": "{color.danger.200}",
+        "success-brush": "{color.success.300}",
+        "slider-track-brush": "{color.neutral.900}",
+        "slider-thumb-brush": "{color.neutral.100}",
+        "slider-muted-fill-brush": "#8DCDFE59",
+        "scrollbar-thumb-brush": "{color.neutral.300}",
+        "panel-background": "#11121FFF",
+        "player-bar-background": "#101010E6",
+        "overlay-bar-background": "#181929E6",
+        "overlay-icon-stroke": "#FFFFFFFF",
+        "overlay-text-brush": "#FFFFFFCC",
+        "overlay-hover-brush": "#FFFFFF1F",
+        "overlay-active-brush": "#FFFFFF33",
+        "overlay-separator": "#FFFFFF33",
+        "overlay-separator-strong": "#FFFFFF4D",
+        "overlay-slider-track": "#FFFFFF33",
+        "overlay-slider-fill": "#FFFFFF80",
+        "radial-sector-active-brush": "#8DCDFE66",
+        "caption-close-background": "{color.danger.600}",
+        "caption-close-pressed-background": "{color.danger.700}",
+        "window-glow-overlay": "#FFFFFF00"
+      },
+      "light": {
+        "window-background": "{color.neutral.100}",
+        "window-border-color": "{color.neutral.300}",
+        "menu-background": "{color.neutral.200}",
+        "menu-border-color": "{color.neutral.300}",
+        "brand-foreground": "{color.neutral.950}",
+        "text-primary": "{color.neutral.900}",
+        "text-secondary": "{color.neutral.700}",
+        "text-hint": "{color.neutral.600}",
+        "group-foreground": "{color.neutral.600}",
+        "nav-item-foreground": "{color.neutral.700}",
+        "nav-hover-background": "{color.neutral.300}",
+        "nav-selected-background": "{color.neutral.300}",
+        "nav-selected-foreground": "{color.neutral.950}",
+        "nav-accent": "{color.primary.600}",
+        "accent-foreground": "{color.neutral.50}",
+        "card-background": "{color.neutral.50}",
+        "card-border-color": "{color.neutral.300}",
+        "button-background": "{color.neutral.50}",
+        "button-border-color": "{color.neutral.300}",
+        "button-foreground": "{color.neutral.900}",
+        "button-hover-background": "{color.neutral.200}",
+        "button-pressed-background": "{color.neutral.300}",
+        "button-primary-background": "{color.primary.600}",
+        "button-primary-hover": "{color.primary.700}",
+        "button-primary-foreground": "{color.neutral.50}",
+        "danger-brush": "{color.danger.600}",
+        "success-brush": "{color.success.800}",
+        "slider-track-brush": "{color.neutral.200}",
+        "slider-thumb-brush": "{color.neutral.700}",
+        "slider-muted-fill-brush": "#2E4DCE59",
+        "scrollbar-thumb-brush": "{color.neutral.600}",
+        "panel-background": "#F6FBFDFF",
+        "player-bar-background": "#E1EAEFE6",
+        "overlay-bar-background": "#E1EAEFE6",
+        "overlay-icon-stroke": "#303345FF",
+        "overlay-text-brush": "#303345CC",
+        "overlay-hover-brush": "#18192914",
+        "overlay-active-brush": "#1819291F",
+        "overlay-separator": "#18192933",
+        "overlay-separator-strong": "#1819294D",
+        "overlay-slider-track": "#18192933",
+        "overlay-slider-fill": "#18192959",
+        "radial-sector-active-brush": "#2E4DCE66",
+        "caption-close-background": "{color.danger.600}",
+        "caption-close-pressed-background": "{color.danger.700}",
+        "window-glow-overlay": "#FFFFFF00"
+      }
+    }
+  },
+  "pairs": [
+    {
+      "name": "d-主文字@窗口",
+      "fg": "#e1eaef",
+      "bg": "#303345"
+    },
+    {
+      "name": "d-次文字@窗口",
+      "fg": "#c4d1d8",
+      "bg": "#303345"
+    },
+    {
+      "name": "d-弱文字@窗口",
+      "fg": "#a8b6c0",
+      "bg": "#303345"
+    },
+    {
+      "name": "d-弱文字@卡片",
+      "fg": "#a8b6c0",
+      "bg": "#404558"
+    },
+    {
+      "name": "d-强调@窗口",
+      "fg": "#8dcdfe",
+      "bg": "#303345"
+    },
+    {
+      "name": "d-强调@卡片",
+      "fg": "#8dcdfe",
+      "bg": "#404558"
+    },
+    {
+      "name": "d-危险@窗口",
+      "fg": "#ffb1cd",
+      "bg": "#303345"
+    },
+    {
+      "name": "d-危险@卡片",
+      "fg": "#ffb1cd",
+      "bg": "#404558"
+    },
+    {
+      "name": "d-成功@窗口",
+      "fg": "#7be0c0",
+      "bg": "#303345"
+    },
+    {
+      "name": "d-成功@卡片",
+      "fg": "#7be0c0",
+      "bg": "#404558"
+    },
+    {
+      "name": "d-导航@侧栏",
+      "fg": "#a8b6c0",
+      "bg": "#181929"
+    },
+    {
+      "name": "d-选中文字@选中底",
+      "fg": "#f0f6fa",
+      "bg": "#50566a"
+    },
+    {
+      "name": "d-按钮文字@按钮底",
+      "fg": "#f0f6fa",
+      "bg": "#50566a"
+    },
+    {
+      "name": "d-浮层文字@浮层底",
+      "fg": "#ffffff",
+      "bg": "#181929"
+    },
+    {
+      "name": "l-主文字@窗口",
+      "fg": "#303345",
+      "bg": "#e1eaef"
+    },
+    {
+      "name": "l-次文字@窗口",
+      "fg": "#50566a",
+      "bg": "#e1eaef"
+    },
+    {
+      "name": "l-弱文字@窗口",
+      "fg": "#60687d",
+      "bg": "#e1eaef"
+    },
+    {
+      "name": "l-弱文字@卡片",
+      "fg": "#60687d",
+      "bg": "#f0f6fa"
+    },
+    {
+      "name": "l-强调@窗口",
+      "fg": "#2e4dce",
+      "bg": "#e1eaef"
+    },
+    {
+      "name": "l-强调@卡片",
+      "fg": "#2e4dce",
+      "bg": "#f0f6fa"
+    },
+    {
+      "name": "l-危险@窗口",
+      "fg": "#ba2528",
+      "bg": "#e1eaef"
+    },
+    {
+      "name": "l-危险@卡片",
+      "fg": "#ba2528",
+      "bg": "#f0f6fa"
+    },
+    {
+      "name": "l-成功@窗口",
+      "fg": "#14702b",
+      "bg": "#e1eaef"
+    },
+    {
+      "name": "l-成功@卡片",
+      "fg": "#14702b",
+      "bg": "#f0f6fa"
+    },
+    {
+      "name": "l-导航@侧栏",
+      "fg": "#50566a",
+      "bg": "#c4d1d8"
+    },
+    {
+      "name": "l-选中文字@选中底",
+      "fg": "#181929",
+      "bg": "#a8b6c0"
+    },
+    {
+      "name": "l-按钮文字@按钮底",
+      "fg": "#303345",
+      "bg": "#f0f6fa"
+    },
+    {
+      "name": "关闭键白字@红底",
+      "fg": "#ffffff",
+      "bg": "#ba2528"
+    },
+    {
+      "name": "主按钮白字@强调底",
+      "fg": "#ffffff",
+      "bg": "#2e4dce"
+    },
+    {
+      "name": "d-强调底上的内容色",
+      "fg": "#181929",
+      "bg": "#8dcdfe"
+    },
+    {
+      "name": "l-强调底上的内容色",
+      "fg": "#f0f6fa",
+      "bg": "#2e4dce"
+    }
+  ]
+}

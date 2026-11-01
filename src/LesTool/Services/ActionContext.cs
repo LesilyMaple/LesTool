@@ -1,59 +1,38 @@
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using LesTool.Platform;
 using Serilog;
-
 namespace LesTool.Services;
 
-/// <summary>
-/// 按命令声明的 ContextKind 惰性构建 LesContext（宿主侧实现）。
-/// 须在 UI 线程调用（WPF Clipboard API 要求 STA；各触发源的分发路径均满足）。
-/// </summary>
 internal static class ContextProvider
 {
-    public static LesContext Build(ContextKind kind)
+    internal static async Task<LesContext> BuildAsync(ContextKind kind, TriggerEnvelope trigger, CancellationToken token)
     {
-        string? clipboardText = null;
-        double? clipboardAgeMs = null;
-        Point cursor = default;
-        string? activeTitle = null;
-        nint activeHandle = 0;
-
-        try
+        string? text = null, clipboard = null, title = null;
+        double? age = null; nint focus = 0;
+        IReadOnlyList<string>? files = null;
+        var scenario = trigger.Source switch { TriggerSource.Hotkey => CommandScenarios.Hotkey,
+            TriggerSource.Radial => CommandScenarios.Radial, _ => CommandScenarios.Palette };
+        if (kind.HasFlag(ContextKind.Focus) && trigger.Target.IsAlive)
         {
-            if (kind.HasFlag(ContextKind.Cursor))
-                cursor = GdiCapture.GetCursorPosition();
-
-            if (kind.HasFlag(ContextKind.ActiveWindow))
-            {
-                activeHandle = GetForegroundWindow();
-                if (activeHandle != 0)
-                {
-                    var buffer = new System.Text.StringBuilder(256);
-                    activeTitle = GetWindowText(activeHandle, buffer, buffer.Capacity) > 0
-                        ? buffer.ToString()
-                        : null;
-                }
-            }
-
-            if (kind.HasFlag(ContextKind.Clipboard) && Clipboard.ContainsText())
-            {
-                clipboardText = Clipboard.GetText();
-                clipboardAgeMs = ClipboardService.AgeMsOfLastUpdate(); // 无监听数据时为 null
-            }
+            focus = trigger.Target.Handle;
+            try { var buffer = new StringBuilder(256); if (GetWindowText(focus, buffer, buffer.Capacity) > 0) title = buffer.ToString(); }
+            catch (Exception e) { Log.Debug(e, "焦点上下文不可用"); }
         }
-        catch (Exception ex)
-        {
-            // 单项失败不影响其余字段与派发
-            Log.Debug(ex, "上下文获取部分失败（{Kind}），缺失字段置空", kind);
-        }
-
-        return new LesContext(null, clipboardText, clipboardAgeMs, cursor, activeTitle, activeHandle, null);
+        if (kind.HasFlag(ContextKind.Clipboard))
+            try { if (Clipboard.ContainsText()) { clipboard = Clipboard.GetText(); age = ClipboardService.AgeMsOfLastUpdate(); } }
+            catch (Exception e) { Log.Debug(e, "剪贴板上下文不可用"); }
+        if (kind.HasFlag(ContextKind.SelectedText) && ScenarioCapabilities.Provides(scenario, ContextKind.SelectedText))
+            try { text = await SelectionText.AcquireAsync(trigger.Target, token); }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception e) { Log.Debug(e, "文本上下文不可用"); }
+        if (kind.HasFlag(ContextKind.SelectedFiles) && ScenarioCapabilities.Provides(scenario, ContextKind.SelectedFiles))
+            try { files = (await ExplorerSelection.GetSelectionAsync(trigger.Target, token))?.Paths; }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception e) { Log.Debug(e, "文件上下文不可用"); }
+        return new(text, clipboard, age, kind.HasFlag(ContextKind.Cursor) ? trigger.Cursor : default,
+            title, focus, files, trigger.Source);
     }
-
-    [DllImport("user32.dll")]
-    private static extern nint GetForegroundWindow();
-
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern int GetWindowText(nint hWnd, System.Text.StringBuilder text, int count);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetWindowText(nint hwnd, StringBuilder text, int max);
 }

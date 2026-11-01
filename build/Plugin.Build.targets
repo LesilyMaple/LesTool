@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <HostOutput Condition="'$(HostOutput)' == ''">$(MSBuildThisFileDirectory)..\src\LesTool\bin\$(Configuration)\net8.0-windows\win-x64</HostOutput>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <!-- Invoke only after the host and its build-only plugin references finish. Replace each output atomically. -->
+  <Target Name="DeployToHost" DependsOnTargets="GetTargetPath">
+    <Error Condition="!Exists('$(TargetPath)')" Text="Plugin must be built before deployment: $(MSBuildProjectName)" />
+    <Exec Command="python &quot;$(MSBuildThisFileDirectory)..\tools\deploy_plugin.py&quot; --source &quot;$(TargetDir).&quot; --host-output &quot;$(HostOutput).&quot; --id &quot;$(PluginId)&quot; --project &quot;$(MSBuildProjectDirectory)&quot;" />
+  </Target>
+</Project>

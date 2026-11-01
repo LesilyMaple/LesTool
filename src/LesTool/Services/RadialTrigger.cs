@@ -13,8 +13,15 @@ public sealed class RadialTrigger
     /// <summary>按住拖动超过阈值。参数为触发时光标的屏幕物理像素坐标。</summary>
     public event Action<Point>? Triggered;
 
+    /// <summary>轮盘显示期间的每次鼠标移动（屏幕物理像素）。扇区悬停高亮的数据源。</summary>
+    public event Action<Point>? Moved;
+
     /// <summary>按住并显示过后松开右键。</summary>
     public event Action? Released;
+
+    /// <summary>越过阈值后、触发显示前的同步闸（钩子线程调用，须快速、无锁、无 IO）。
+    /// 返回 true = 当前软件禁用轮盘：本次手势不触发，松开时按普通右键单击回放。</summary>
+    public Func<bool>? SuppressTrigger { get; set; }
 
     private bool _tracking;
     private bool _shown;
@@ -32,11 +39,25 @@ public sealed class RadialTrigger
 
     public void OnMouseMove(Point point)
     {
-        if (!_tracking || _shown) return;
+        if (!_tracking) return;
+
+        if (_shown)
+        {
+            // 显示期持续上报位置（扇区悬停高亮）；同线程顺序派发，松开前最后一次移动必先于松开到达
+            Moved?.Invoke(point);
+            return;
+        }
 
         var dx = point.X - _origin.X;
         var dy = point.Y - _origin.Y;
         if (dx * dx + dy * dy < ThresholdPx * ThresholdPx) return;
+
+        if (SuppressTrigger?.Invoke() == true)
+        {
+            // 本软件禁用轮盘：手势就此作罢（视为普通右键，松开时钩子按单击回放）
+            _tracking = false;
+            return;
+        }
 
         _shown = true;
         Triggered?.Invoke(point);

@@ -11,13 +11,19 @@ namespace LesTool.Platform;
 public interface ILesHost
 {
     /// <summary>登记一条命令（来源记为 Plugin）。命令 Id 全局唯一，
-    /// 约定以插件 Id 为前缀（如 sample.hello），重复 Id 会顶替先前注册。
-    /// 登记后热键/命令面板/托盘/轮盘槽位四类触发源自动可用。</summary>
+    /// 约定以插件 Id 为前缀（如 volume.mixer），重复 Id 会拒绝整个插件的注册批次。
+    /// 双属性（2026-10-26/31 拍板）：scenarios=可从哪些入口触发（缺省三源全开）；
+    /// requires=必填上下文（缺了动作无意义，绑定期按入口能力表门禁、运行时空值平台拦截）；
+    /// optional=选填上下文（缺了降级不失效）。登记后各触发源按声明自动可用。</summary>
     void RegisterCommand(string id, string name, string glyph, Action<LesContext> callback,
-        string keywords = "", ContextKind requires = ContextKind.None);
+        string keywords = "", ContextKind requires = ContextKind.None,
+        CommandScenarios scenarios = CommandScenarios.All, ContextKind optional = ContextKind.None);
 
-    /// <summary>登记设置页（可选）：进主窗口导航"插件"分组，工厂每次建页时调用。</summary>
-    void RegisterSettingsPage(string title, string glyph, Func<FrameworkElement> factory);
+    /// <summary>登记设置页（可选，可多次）：进主窗口导航"插件"分组，工厂每次建页时调用。
+    /// 工厂只返回"纯内容"（一串 <see cref="Controls.SettingsSection"/>）；页框（滚动/边距/
+    /// 页头/热键区）由宿主统一包装（PLUGIN_UI_SPEC）：页头 = 图标（可点击换）+ 名称 +
+    /// 清单简介，热键配置自动注入在页头；导航名与图标取清单 + 用户覆盖，不由插件自报。</summary>
+    void RegisterSettingsPage(Func<FrameworkElement> factory);
 
     /// <summary>本插件的资产解析（根目录 plugins/&lt;id&gt;/assets/）。</summary>
     IPluginAssets Assets { get; }

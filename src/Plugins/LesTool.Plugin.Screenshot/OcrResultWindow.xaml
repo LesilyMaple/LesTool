@@ -1,0 +1,53 @@
+<Window x:Class="LesTool.Plugin.Screenshot.OcrResultWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:LesTool.Platform.Controls;assembly=LesTool.Platform"
+        Title="LesTool 文字识别"
+        ResizeMode="CanResize"
+        MinWidth="640" MinHeight="320"
+        WindowStartupLocation="CenterScreen"
+        Focusable="True" PreviewKeyDown="OnPreviewKeyDown"
+        Style="{StaticResource LesWindowStyle}">
+    <DockPanel>
+        <controls:CaptionBar DockPanel.Dock="Top"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="480"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 左：识别原图 1:1 物理像素（WPF 铁律，150% DPI 下不发糊），超出滚动 -->
+            <ScrollViewer x:Name="ImageScroll"
+                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <Grid x:Name="ImageHost" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Image x:Name="OcrImage" Stretch="None"/>
+                    <Canvas x:Name="BoxLayer" IsHitTestVisible="False"/>
+                </Grid>
+            </ScrollViewer>
+
+            <Rectangle Grid.Column="1" Width="1" Fill="{DynamicResource MenuBorderColor}"/>
+
+            <!-- 右：逐行识别文本（悬停高亮图中对应框），长行横向滚动 + Shift+滚轮 -->
+            <Border Grid.Column="2" Background="{DynamicResource MenuBackground}">
+                <DockPanel>
+                    <Border DockPanel.Dock="Bottom" Padding="10,6">
+                        <DockPanel>
+                            <Button Content="复制全部" DockPanel.Dock="Right" Padding="14,0"
+                                    Background="#2E9E5B" Foreground="White"
+                                    Click="OnCopyAllClick"/>
+                            <TextBlock x:Name="OcrStat" Foreground="{DynamicResource TextSecondary}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </Border>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                  Padding="6,6,6,2">
+                        <StackPanel x:Name="OcrLines"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</Window>

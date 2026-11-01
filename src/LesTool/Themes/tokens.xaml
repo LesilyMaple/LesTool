@@ -1,0 +1,173 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
+    <!-- sys:Double / po:Freeze normalized by tools/emit_themes.py (BAML compiler needs sys:Double; shared shadows must be frozen) -->
+  <!-- primitive -->
+  <SolidColorBrush x:Key="ColorNeutral50" Color="#FFF0F6FA" />
+  <SolidColorBrush x:Key="ColorNeutral100" Color="#FFE1EAEF" />
+  <SolidColorBrush x:Key="ColorNeutral200" Color="#FFC4D1D8" />
+  <SolidColorBrush x:Key="ColorNeutral300" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorNeutral400" Color="#FF8C99A7" />
+  <SolidColorBrush x:Key="ColorNeutral500" Color="#FF707A8F" />
+  <SolidColorBrush x:Key="ColorNeutral600" Color="#FF60687D" />
+  <SolidColorBrush x:Key="ColorNeutral700" Color="#FF50566A" />
+  <SolidColorBrush x:Key="ColorNeutral800" Color="#FF404558" />
+  <SolidColorBrush x:Key="ColorNeutral900" Color="#FF303345" />
+  <SolidColorBrush x:Key="ColorNeutral950" Color="#FF181929" />
+  <SolidColorBrush x:Key="ColorPrimary50" Color="#FFF6FBFF" />
+  <SolidColorBrush x:Key="ColorPrimary100" Color="#FFEBF6FF" />
+  <SolidColorBrush x:Key="ColorPrimary200" Color="#FFBBE2FF" />
+  <SolidColorBrush x:Key="ColorPrimary300" Color="#FF8DCDFE" />
+  <SolidColorBrush x:Key="ColorPrimary400" Color="#FF6CA2F0" />
+  <SolidColorBrush x:Key="ColorPrimary500" Color="#FF4C6FE0" />
+  <SolidColorBrush x:Key="ColorPrimary600" Color="#FF2E4DCE" />
+  <SolidColorBrush x:Key="ColorPrimary700" Color="#FF1D34AF" />
+  <SolidColorBrush x:Key="ColorPrimary800" Color="#FF0D1D8E" />
+  <SolidColorBrush x:Key="ColorPrimary900" Color="#FF00096B" />
+  <SolidColorBrush x:Key="ColorPrimary950" Color="#FF00033B" />
+  <SolidColorBrush x:Key="ColorDanger50" Color="#FFFFF6F9" />
+  <SolidColorBrush x:Key="ColorDanger100" Color="#FFFFEBF2" />
+  <SolidColorBrush x:Key="ColorDanger200" Color="#FFFFB1CD" />
+  <SolidColorBrush x:Key="ColorDanger300" Color="#FFF780AB" />
+  <SolidColorBrush x:Key="ColorDanger400" Color="#FFE5597C" />
+  <SolidColorBrush x:Key="ColorDanger500" Color="#FFD13438" />
+  <SolidColorBrush x:Key="ColorDanger600" Color="#FFBA2528" />
+  <SolidColorBrush x:Key="ColorDanger700" Color="#FFA1181A" />
+  <SolidColorBrush x:Key="ColorDanger800" Color="#FF860B0D" />
+  <SolidColorBrush x:Key="ColorDanger900" Color="#FF6B0001" />
+  <SolidColorBrush x:Key="ColorDanger950" Color="#FF3B0000" />
+  <SolidColorBrush x:Key="ColorSuccess50" Color="#FFF6FFFD" />
+  <SolidColorBrush x:Key="ColorSuccess100" Color="#FFEBFFFA" />
+  <SolidColorBrush x:Key="ColorSuccess200" Color="#FFAAF8E3" />
+  <SolidColorBrush x:Key="ColorSuccess300" Color="#FF7BE0C0" />
+  <SolidColorBrush x:Key="ColorSuccess400" Color="#FF4EC58F" />
+  <SolidColorBrush x:Key="ColorSuccess500" Color="#FF2E9E5B" />
+  <SolidColorBrush x:Key="ColorSuccess600" Color="#FF258F4A" />
+  <SolidColorBrush x:Key="ColorSuccess700" Color="#FF1C7F3B" />
+  <SolidColorBrush x:Key="ColorSuccess800" Color="#FF14702B" />
+  <SolidColorBrush x:Key="ColorSuccess900" Color="#FF0C5F1D" />
+  <SolidColorBrush x:Key="ColorSuccess950" Color="#FF003B07" />
+  <SolidColorBrush x:Key="ColorFunctionalMask" Color="#96000000" />
+  <SolidColorBrush x:Key="ColorFunctionalControlbar" Color="#E6101010" />
+  <SolidColorBrush x:Key="ColorFunctionalRecordRed" Color="#FFE53935" />
+  <SolidColorBrush x:Key="ColorFunctionalRecordBase" Color="#B33A3A4A" />
+  <SolidColorBrush x:Key="ColorFunctionalSaveGreen" Color="#FF2E9E5B" />
+  <sys:Double x:Key="TextCaption">12</sys:Double>
+  <sys:Double x:Key="TextBody">14</sys:Double>
+  <sys:Double x:Key="TextSubtitle">18</sys:Double>
+  <sys:Double x:Key="TextTitle">24</sys:Double>
+  <sys:Double x:Key="WeightNormal">400</sys:Double>
+  <sys:Double x:Key="WeightEmphasis">600</sys:Double>
+  <sys:Double x:Key="Space4">4</sys:Double>
+  <sys:Double x:Key="Space8">8</sys:Double>
+  <sys:Double x:Key="Space12">12</sys:Double>
+  <sys:Double x:Key="Space16">16</sys:Double>
+  <sys:Double x:Key="Space24">24</sys:Double>
+  <sys:Double x:Key="Space32">32</sys:Double>
+  <sys:Double x:Key="Space48">48</sys:Double>
+  <sys:Double x:Key="Space64">64</sys:Double>
+  <CornerRadius x:Key="RadiusControl">6</CornerRadius>
+  <CornerRadius x:Key="RadiusOverlay">10</CornerRadius>
+  <!-- SizeControlHeight: 32 -->
+  <!-- SizeCaptionHeight: 40 -->
+  <FontFamily x:Key="FontSans">Segoe UI, Microsoft YaHei</FontFamily>
+  <FontFamily x:Key="FontMono">Consolas</FontFamily>
+  <DropShadowEffect po:Freeze="True" x:Key="ShadowFlyout" Direction="270" ShadowDepth="5" BlurRadius="15" Opacity="0.2" />
+  <DropShadowEffect po:Freeze="True" x:Key="ShadowPanel" Direction="270" ShadowDepth="10" BlurRadius="24" Opacity="0.2" />
+
+  <!-- semantic · markup should consume these -->
+  <SolidColorBrush x:Key="ColorDarkWindowBackground" Color="#FF303345" />
+  <SolidColorBrush x:Key="ColorDarkWindowBorderColor" Color="#FF50566A" />
+  <SolidColorBrush x:Key="ColorDarkMenuBackground" Color="#FF181929" />
+  <SolidColorBrush x:Key="ColorDarkMenuBorderColor" Color="#FF404558" />
+  <SolidColorBrush x:Key="ColorDarkBrandForeground" Color="#FFE1EAEF" />
+  <SolidColorBrush x:Key="ColorDarkTextPrimary" Color="#FFE1EAEF" />
+  <SolidColorBrush x:Key="ColorDarkTextSecondary" Color="#FFC4D1D8" />
+  <SolidColorBrush x:Key="ColorDarkTextHint" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorDarkGroupForeground" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorDarkNavItemForeground" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorDarkNavHoverBackground" Color="#FF404558" />
+  <SolidColorBrush x:Key="ColorDarkNavSelectedBackground" Color="#FF50566A" />
+  <SolidColorBrush x:Key="ColorDarkNavSelectedForeground" Color="#FFF0F6FA" />
+  <SolidColorBrush x:Key="ColorDarkNavAccent" Color="#FF8DCDFE" />
+  <SolidColorBrush x:Key="ColorDarkAccentForeground" Color="#FF181929" />
+  <SolidColorBrush x:Key="ColorDarkCardBackground" Color="#FF404558" />
+  <SolidColorBrush x:Key="ColorDarkCardBorderColor" Color="#FF50566A" />
+  <SolidColorBrush x:Key="ColorDarkButtonBackground" Color="#FF50566A" />
+  <SolidColorBrush x:Key="ColorDarkButtonBorderColor" Color="#FF60687D" />
+  <SolidColorBrush x:Key="ColorDarkButtonForeground" Color="#FFF0F6FA" />
+  <SolidColorBrush x:Key="ColorDarkButtonHoverBackground" Color="#FF60687D" />
+  <SolidColorBrush x:Key="ColorDarkButtonPressedBackground" Color="#FF707A8F" />
+  <SolidColorBrush x:Key="ColorDarkButtonPrimaryBackground" Color="#FF2E4DCE" />
+  <SolidColorBrush x:Key="ColorDarkButtonPrimaryHover" Color="#FF1D34AF" />
+  <SolidColorBrush x:Key="ColorDarkButtonPrimaryForeground" Color="#FFF0F6FA" />
+  <SolidColorBrush x:Key="ColorDarkDangerBrush" Color="#FFFFB1CD" />
+  <SolidColorBrush x:Key="ColorDarkSuccessBrush" Color="#FF7BE0C0" />
+  <SolidColorBrush x:Key="ColorDarkSliderTrackBrush" Color="#FF303345" />
+  <SolidColorBrush x:Key="ColorDarkSliderThumbBrush" Color="#FFE1EAEF" />
+  <SolidColorBrush x:Key="ColorDarkSliderMutedFillBrush" Color="#598DCDFE" />
+  <SolidColorBrush x:Key="ColorDarkScrollbarThumbBrush" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorDarkPanelBackground" Color="#FF11121F" />
+  <SolidColorBrush x:Key="ColorDarkPlayerBarBackground" Color="#E6101010" />
+  <SolidColorBrush x:Key="ColorDarkOverlayBarBackground" Color="#E6181929" />
+  <SolidColorBrush x:Key="ColorDarkOverlayIconStroke" Color="#FFFFFFFF" />
+  <SolidColorBrush x:Key="ColorDarkOverlayTextBrush" Color="#CCFFFFFF" />
+  <SolidColorBrush x:Key="ColorDarkOverlayHoverBrush" Color="#1FFFFFFF" />
+  <SolidColorBrush x:Key="ColorDarkOverlayActiveBrush" Color="#33FFFFFF" />
+  <SolidColorBrush x:Key="ColorDarkOverlaySeparator" Color="#33FFFFFF" />
+  <SolidColorBrush x:Key="ColorDarkOverlaySeparatorStrong" Color="#4DFFFFFF" />
+  <SolidColorBrush x:Key="ColorDarkOverlaySliderTrack" Color="#33FFFFFF" />
+  <SolidColorBrush x:Key="ColorDarkOverlaySliderFill" Color="#80FFFFFF" />
+  <SolidColorBrush x:Key="ColorDarkRadialSectorActiveBrush" Color="#668DCDFE" />
+  <SolidColorBrush x:Key="ColorDarkCaptionCloseBackground" Color="#FFBA2528" />
+  <SolidColorBrush x:Key="ColorDarkCaptionClosePressedBackground" Color="#FFA1181A" />
+  <SolidColorBrush x:Key="ColorDarkWindowGlowOverlay" Color="#00FFFFFF" />
+  <SolidColorBrush x:Key="ColorLightWindowBackground" Color="#FFE1EAEF" />
+  <SolidColorBrush x:Key="ColorLightWindowBorderColor" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorLightMenuBackground" Color="#FFC4D1D8" />
+  <SolidColorBrush x:Key="ColorLightMenuBorderColor" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorLightBrandForeground" Color="#FF181929" />
+  <SolidColorBrush x:Key="ColorLightTextPrimary" Color="#FF303345" />
+  <SolidColorBrush x:Key="ColorLightTextSecondary" Color="#FF50566A" />
+  <SolidColorBrush x:Key="ColorLightTextHint" Color="#FF60687D" />
+  <SolidColorBrush x:Key="ColorLightGroupForeground" Color="#FF60687D" />
+  <SolidColorBrush x:Key="ColorLightNavItemForeground" Color="#FF50566A" />
+  <SolidColorBrush x:Key="ColorLightNavHoverBackground" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorLightNavSelectedBackground" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorLightNavSelectedForeground" Color="#FF181929" />
+  <SolidColorBrush x:Key="ColorLightNavAccent" Color="#FF2E4DCE" />
+  <SolidColorBrush x:Key="ColorLightAccentForeground" Color="#FFF0F6FA" />
+  <SolidColorBrush x:Key="ColorLightCardBackground" Color="#FFF0F6FA" />
+  <SolidColorBrush x:Key="ColorLightCardBorderColor" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorLightButtonBackground" Color="#FFF0F6FA" />
+  <SolidColorBrush x:Key="ColorLightButtonBorderColor" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorLightButtonForeground" Color="#FF303345" />
+  <SolidColorBrush x:Key="ColorLightButtonHoverBackground" Color="#FFC4D1D8" />
+  <SolidColorBrush x:Key="ColorLightButtonPressedBackground" Color="#FFA8B6C0" />
+  <SolidColorBrush x:Key="ColorLightButtonPrimaryBackground" Color="#FF2E4DCE" />
+  <SolidColorBrush x:Key="ColorLightButtonPrimaryHover" Color="#FF1D34AF" />
+  <SolidColorBrush x:Key="ColorLightButtonPrimaryForeground" Color="#FFF0F6FA" />
+  <SolidColorBrush x:Key="ColorLightDangerBrush" Color="#FFBA2528" />
+  <SolidColorBrush x:Key="ColorLightSuccessBrush" Color="#FF14702B" />
+  <SolidColorBrush x:Key="ColorLightSliderTrackBrush" Color="#FFC4D1D8" />
+  <SolidColorBrush x:Key="ColorLightSliderThumbBrush" Color="#FF50566A" />
+  <SolidColorBrush x:Key="ColorLightSliderMutedFillBrush" Color="#592E4DCE" />
+  <SolidColorBrush x:Key="ColorLightScrollbarThumbBrush" Color="#FF60687D" />
+  <SolidColorBrush x:Key="ColorLightPanelBackground" Color="#FFF6FBFD" />
+  <SolidColorBrush x:Key="ColorLightPlayerBarBackground" Color="#E6E1EAEF" />
+  <SolidColorBrush x:Key="ColorLightOverlayBarBackground" Color="#E6E1EAEF" />
+  <SolidColorBrush x:Key="ColorLightOverlayIconStroke" Color="#FF303345" />
+  <SolidColorBrush x:Key="ColorLightOverlayTextBrush" Color="#CC303345" />
+  <SolidColorBrush x:Key="ColorLightOverlayHoverBrush" Color="#14181929" />
+  <SolidColorBrush x:Key="ColorLightOverlayActiveBrush" Color="#1F181929" />
+  <SolidColorBrush x:Key="ColorLightOverlaySeparator" Color="#33181929" />
+  <SolidColorBrush x:Key="ColorLightOverlaySeparatorStrong" Color="#4D181929" />
+  <SolidColorBrush x:Key="ColorLightOverlaySliderTrack" Color="#33181929" />
+  <SolidColorBrush x:Key="ColorLightOverlaySliderFill" Color="#59181929" />
+  <SolidColorBrush x:Key="ColorLightRadialSectorActiveBrush" Color="#662E4DCE" />
+  <SolidColorBrush x:Key="ColorLightCaptionCloseBackground" Color="#FFBA2528" />
+  <SolidColorBrush x:Key="ColorLightCaptionClosePressedBackground" Color="#FFA1181A" />
+  <SolidColorBrush x:Key="ColorLightWindowGlowOverlay" Color="#00FFFFFF" />
+</ResourceDictionary>

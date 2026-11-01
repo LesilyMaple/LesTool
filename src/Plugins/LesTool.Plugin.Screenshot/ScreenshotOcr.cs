@@ -78,6 +78,29 @@ internal static class ScreenshotOcr
         return new Rect(minX, minY, maxX - minX, maxY - minY);
     }
 
+    /// <summary>按绝对路径预装载推理用的原生库。
+    /// 插件目录不在 DllImport 的搜索路径上（AddDllDirectory 只对带
+    /// LOAD_LIBRARY_SEARCH_* 标志的 LoadLibraryEx 生效，.NET 的 by-name
+    /// P/Invoke 不走它，否则首次调用即 0x8007007E）。预装后按模块名命中
+    /// 已装载模块，后续 P/Invoke 不再依赖搜索路径。仍在首次识别时才调，
+    /// 保持"平时挂着零额外内存"。</summary>
+    private static void PreloadNativeLibs()
+    {
+        string pluginDir = Path.Combine(AppContext.BaseDirectory, "plugins", "screenshot");
+        string[] natives = { "libSkiaSharp.dll", "onnxruntime.dll", "onnxruntime_providers_shared.dll" };
+        foreach (string native in natives)
+        {
+            string path = Path.Combine(pluginDir, native);
+            if (!File.Exists(path))
+            {
+                Log.Warning("插件目录缺少原生库：{Path}", path);
+                continue;
+            }
+            NativeLibrary.Load(path);
+            Log.Debug("原生库已预装载：{Native}", native);
+        }
+    }
+
     /// <summary>截图会话结束调用：释放引擎，下次识别重新加载模型。</summary>
     public static void Release()
     {
@@ -91,6 +114,8 @@ internal static class ScreenshotOcr
 
     private static RapidOcr CreateEngine()
     {
+        PreloadNativeLibs();
+
         // 模型搜索序：插件资产目录优先，程序目录（旧布局）向后兼容
         string[] modelDirs =
         {

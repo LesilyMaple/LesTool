@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -27,6 +28,7 @@ public partial class PanelShellWindow : Window
     private int _shownAt;        // 显示时刻：Show 后激活未稳的窗口期忽略失焦
     private List<LesCommand> _filtered = new(); // 当前清单（过滤结果，按注册序）
     private int _selectedIndex;  // 键盘选中行（-1 = 无）
+    private TriggerSnapshot? _focusSnapshot; // 呼出前抓的原前台（随派发传入，修面板路径失准）
 
     /// <summary>淡出收起完成。</summary>
     public event Action? Hidden;
@@ -51,6 +53,11 @@ public partial class PanelShellWindow : Window
     /// <summary>在光标所在显示器顶部居中呼出。参数为光标物理像素坐标。</summary>
     public void ShowAt(Point cursorPx)
     {
+        // 抢焦点前先记住原焦点窗口——派发时 Focus 用它，不问已收起的自己
+        var target = WindowTarget.Capture();
+        _focusSnapshot = new TriggerSnapshot(target.Handle) { Target = target };
+        Log.Debug("面板触发快照：原前台 {Handle}", _focusSnapshot.FocusWindowHandle);
+
         _anchorPx = cursorPx;
         _closing = false;
         _shownAt = Environment.TickCount;
@@ -126,13 +133,16 @@ public partial class PanelShellWindow : Window
         ApplyFilter();
     }
 
-    /// <summary>按 名称/别名/Id 过滤（不区分大小写）；空输入 = 全量。选中回到第 0 行。</summary>
+    /// <summary>按 名称/别名/Id 过滤（不区分大小写）；空输入 = 全量。
+    /// 清单用 ForScenario(Palette)：场景声明 + 能力表（面板给不出选中项的命令不列，
+    /// 2026-10-31 起由声明式门禁统一，原 SelectedText 特判收编进能力表）。</summary>
     private void ApplyFilter()
     {
         var query = CommandInput.Text.Trim();
+        var source = ActionRegistry.ForScenario(CommandScenarios.Palette);
         _filtered = string.IsNullOrEmpty(query)
-            ? ActionRegistry.All.ToList()
-            : ActionRegistry.All.Where(c =>
+            ? source.ToList()
+            : source.Where(c =>
                 c.Name.Contains(query, StringComparison.OrdinalIgnoreCase)
                 || c.Keywords.Contains(query, StringComparison.OrdinalIgnoreCase)
                 || c.Id.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -197,7 +207,6 @@ public partial class PanelShellWindow : Window
         {
             Text = command.Kind switch
             {
-                CommandKind.Script => "脚本",
                 CommandKind.Plugin => "插件",
                 CommandKind.Panel => "面板",
                 _ => "内置",
@@ -269,7 +278,7 @@ public partial class PanelShellWindow : Window
 
         Log.Debug("面板执行命令：{Id}（第 {Index} 行）", command.Id, _selectedIndex);
         HideAnimated();
-        ActionRegistry.Execute(command.Id); // 先收起再执行：命令开新窗口抢焦点时面板已让位
+        ActionRegistry.Execute(command.Id, TriggerSource.CommandPalette, _focusSnapshot); // 先收起再执行：命令开新窗口抢焦点时面板已让位
     }
 
     private void OnDeactivated(object sender, EventArgs e)
@@ -278,4 +287,7 @@ public partial class PanelShellWindow : Window
         if (Environment.TickCount - _shownAt < ActivateGuardMs) return;
         HideAnimated();
     }
+
+    [DllImport("user32.dll")]
+    private static extern nint GetForegroundWindow();
 }

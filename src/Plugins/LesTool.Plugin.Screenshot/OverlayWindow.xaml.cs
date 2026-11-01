@@ -41,13 +41,11 @@ internal partial class OverlayWindow : Window
 
     private readonly SelectionSession _session;
     private readonly AnnotationState _annotations;
-    private readonly OcrPanelState _ocr;
     private readonly Func<Rect, BitmapSource> _mosaicFactory;
     private readonly BitmapSource _frozenCrop;   // 本屏冻结图（放大镜读像素用）
     private readonly Rectangle[] _handles = new Rectangle[8];
     private readonly Dictionary<AnnotationTool, Button> _toolButtons = new();
     private readonly Button[] _colorButtons = new Button[6];
-    private readonly List<Rectangle> _ocrBoxes = new();   // 选区画面上的识别绿框
 
     private Rect? _hoverPhys;              // 悬停窗口矩形（全局物理像素），仅 None 状态维护
     private long _lastHoverDetectTicks;
@@ -86,12 +84,11 @@ internal partial class OverlayWindow : Window
     private double Scale { get; set; } = 1.0;
 
     internal OverlayWindow(BitmapSource frozenCrop, Rect monitorPhys, SelectionSession session,
-        AnnotationState annotations, OcrPanelState ocrState, Func<Rect, BitmapSource> mosaicFactory)
+        AnnotationState annotations, Func<Rect, BitmapSource> mosaicFactory)
     {
         InitializeComponent();
         _session = session;
         _annotations = annotations;
-        _ocr = ocrState;
         _mosaicFactory = mosaicFactory;
         _frozenCrop = frozenCrop;
         MonitorPhys = monitorPhys;
@@ -140,7 +137,6 @@ internal partial class OverlayWindow : Window
         };
         _session.Changed += OnSessionChanged;
         _annotations.Changed += OnAnnotationsChanged;
-        _ocr.Changed += OnOcrChanged;
 
         UpdateToolbarUi();
         Render();
@@ -191,8 +187,8 @@ internal partial class OverlayWindow : Window
 
         if (e.OriginalSource is Visual source)
         {
-            // 工具栏 / OCR 面板按钮自己的点击：若有文字在输入，先定稿再让按钮生效
-            if (Toolbar.IsAncestorOf(source) || OcrPanel.IsAncestorOf(source))
+            // 工具栏按钮自己的点击：若有文字在输入，先定稿再让按钮生效
+            if (Toolbar.IsAncestorOf(source))
             {
                 if (_textEditor != null) CommitText();
                 return;
@@ -303,10 +299,9 @@ internal partial class OverlayWindow : Window
     {
         if (e.Key == Key.Escape)
         {
-            // 逐层退出：输入/绘制 → OCR 面板 → 色板 → 工具（取消即退出编辑） → 整个截图
+            // 逐层退出：输入/绘制 → 色板 → 工具（取消即退出编辑） → 整个截图
             if (_textEditor != null) CancelText();
             else if (_draft != null) { _draft = null; _draftPoints = null; RepaintAnnotations(); }
-            else if (_ocr.HasResult) _ocr.Clear();
             else if (SubColors.Visibility == Visibility.Visible)
             {
                 SubColors.Visibility = Visibility.Collapsed;
@@ -758,6 +753,13 @@ internal partial class OverlayWindow : Window
         _session.RequestOcr();
     }
 
+    private void OnQrClick(object sender, RoutedEventArgs e)
+    {
+        if (_textEditor != null) CommitText();
+        _draft = null;
+        _session.RequestQr();
+    }
+
     private void OnLongClick(object sender, RoutedEventArgs e)
     {
         if (_textEditor != null) CommitText();
@@ -834,117 +836,6 @@ internal partial class OverlayWindow : Window
 
     #endregion
 
-    #region OCR 面板
-
-    private static readonly Brush OcrBoxBrush = new SolidColorBrush(Color.FromArgb(0x40, 0x32, 0xCD, 0x32));
-    private static readonly Brush OcrBoxHoverBrush = new SolidColorBrush(Color.FromArgb(0x99, 0x32, 0xCD, 0x32));
-
-    private void OnOcrChanged()
-    {
-        RebuildOcrPanel();
-        Render();
-    }
-
-    /// <summary>重建面板行与选区上的绿框元素。</summary>
-    private void RebuildOcrPanel()
-    {
-        OcrLines.Children.Clear();
-        foreach (Rectangle box in _ocrBoxes)
-            Paint.Children.Remove(box);
-        _ocrBoxes.Clear();
-        OcrPanel.Visibility = Visibility.Collapsed;
-
-        if (!_ocr.HasResult)
-            return;
-
-        OcrStat.Text = $"{_ocr.Lines.Count} 行";
-        int insertIndex = Paint.Children.IndexOf(SelBorder) + 1; // 绿框盖在选区描边上、工具栏之下
-        for (int i = 0; i < _ocr.Lines.Count; i++)
-        {
-            int index = i;
-            var line = new TextBox
-            {
-                Text = _ocr.Lines[i].Text,
-                IsReadOnly = true,
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(0),
-                Foreground = Brushes.White,
-                FontSize = 13,
-                FontFamily = new FontFamily("Microsoft YaHei UI"),
-                Padding = new Thickness(4, 2, 4, 2),
-                TextWrapping = TextWrapping.NoWrap,
-                Cursor = Cursors.IBeam,
-            };
-            line.MouseEnter += (_, _) => SetOcrHover(index, true);
-            line.MouseLeave += (_, _) => SetOcrHover(index, false);
-            OcrLines.Children.Add(line);
-
-            var box = new Rectangle { Fill = OcrBoxBrush, IsHitTestVisible = false };
-            _ocrBoxes.Add(box);
-            Paint.Children.Insert(insertIndex, box);
-        }
-    }
-
-    /// <summary>按当前选区位置摆放绿框与面板（选区定稿且有结果时）。</summary>
-    private void UpdateOcrUi(Rect sel, double cw, double ch, bool hovering)
-    {
-        bool show = !hovering && _ocr.HasResult &&
-            _session.Current == SelectionSession.State.Selected;
-        if (!show)
-        {
-            OcrPanel.Visibility = Visibility.Collapsed;
-            foreach (Rectangle box in _ocrBoxes)
-                box.Visibility = Visibility.Collapsed;
-            return;
-        }
-
-        // 绿框：识别盒是"选区左上角相对"坐标，换算到本遮罩 DIP
-        Rect selPhys = _session.Selection;
-        for (int i = 0; i < _ocrBoxes.Count; i++)
-        {
-            Rect boxPhys = _ocr.Lines[i].Box;
-            if (boxPhys.IsEmpty)
-            {
-                _ocrBoxes[i].Visibility = Visibility.Collapsed;
-                continue;
-            }
-            Rect local = ToLocal(new Rect(
-                selPhys.X + boxPhys.X, selPhys.Y + boxPhys.Y, boxPhys.Width, boxPhys.Height));
-            SetRect(_ocrBoxes[i], local.X, local.Y, Math.Max(2, local.Width), Math.Max(2, local.Height));
-            _ocrBoxes[i].Visibility = Visibility.Visible;
-        }
-
-        // 面板：贴选区右侧、顶边对齐；右侧放不下翻到左侧
-        var anchorPhys = new Point(selPhys.Right - 2, selPhys.Top + selPhys.Height / 2);
-        if (!MonitorPhys.Contains(anchorPhys))
-        {
-            OcrPanel.Visibility = Visibility.Collapsed;
-            return;
-        }
-        double panelW = OcrPanel.Width;
-        double panelH = Math.Clamp(sel.Height, 180, 520);
-        double x = sel.Right + 8;
-        if (x + panelW > cw)
-            x = Math.Max(4, sel.Left - panelW - 8);
-        double y = Math.Clamp(sel.Top, 4, Math.Max(4, ch - panelH - 4));
-        OcrPanel.Visibility = Visibility.Visible;
-        SetRect(OcrPanel, x, y, panelW, panelH);
-    }
-
-    private void SetOcrHover(int index, bool on) =>
-        _ocrBoxes[index].Fill = on ? OcrBoxHoverBrush : OcrBoxBrush;
-
-    private void OnOcrCopyAllClick(object sender, RoutedEventArgs e)
-    {
-        string all = string.Join(Environment.NewLine, _ocr.Lines.Select(l => l.Text));
-        if (all.Length > 0)
-            Clipboard.SetText(all);
-    }
-
-    private void OnOcrCloseClick(object sender, RoutedEventArgs e) => _ocr.Clear();
-
-    #endregion
-
     #region 渲染
 
     private void OnSessionChanged()
@@ -953,9 +844,6 @@ internal partial class OverlayWindow : Window
         // 松手时的"单击采纳窗口"要靠它拿到按下前的窗口矩形
         if (_session.Current == SelectionSession.State.Selected)
             _hoverPhys = null;
-        // 选区变动后 OCR 框与画面必然错位，直接收起面板
-        if (_session.Current != SelectionSession.State.Selected)
-            _ocr.Clear();
         Render();
     }
 
@@ -1062,9 +950,6 @@ internal partial class OverlayWindow : Window
         {
             Toolbar.Visibility = Visibility.Collapsed;
         }
-
-        // OCR 面板与选区上的识别绿框
-        UpdateOcrUi(sel, cw, ch, hovering);
     }
 
     /// <summary>无高亮状态：整屏暗幕，隐藏选区/悬停的一切可视化元素。</summary>

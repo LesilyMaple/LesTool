@@ -1,0 +1,19 @@
+<UserControl x:Class="LesTool.Views.Pages.PluginManagePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,24,32,24">
+            <TextBlock Text="插件管理" FontSize="{DynamicResource FontSizeTitle}"
+                       Foreground="{DynamicResource BrandForeground}"/>
+            <TextBlock Text="这里是全部插件的启用总开关；更改在下次启动生效，细粒度选项在各插件自己的设置页。"
+                       FontSize="{DynamicResource FontSizeBody}"
+                       Foreground="{DynamicResource TextSecondary}" Margin="0,8,0,0"/>
+
+            <StackPanel x:Name="PluginList" Margin="0,24,0,0"/>
+
+            <TextBlock Text="卸载插件：删除程序目录 plugins\ 下对应文件夹后重启；装载失败原因详见日志。"
+                       FontSize="{DynamicResource FontSizeCaption}"
+                       Foreground="{DynamicResource TextHint}" Margin="0,8,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

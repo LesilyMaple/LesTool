@@ -22,6 +22,7 @@ public sealed class MouseHookService : IDisposable
 {
     private const int WH_MOUSE_LL = 14;
     private const int WM_MOUSEMOVE = 0x0200;
+    private const int WM_LBUTTONDOWN = 0x0201;
     private const int WM_RBUTTONDOWN = 0x0204;
     private const int WM_RBUTTONUP = 0x0205;
     private const int WM_MOUSEWHEEL = 0x020A;
@@ -60,6 +61,10 @@ public sealed class MouseHookService : IDisposable
         Hook,
         Raw
     }
+
+    /// <summary>轮盘显示期间按下左键 → 取消轮盘（钩子线程回调；订阅方须异步封送 UI 线程）。
+    /// 仅钩子通道能吞掉这次点击；游戏内（Raw 通道兜底）左键照常下传，松开右键仍可取消。</summary>
+    public event Action? RadialLeftClickCancel;
 
     private Source _claim = Source.None;
     private bool _hookSwallowedDown; // 钩子扣下了本次手势的物理右键按下（松开为普通单击时需回放）
@@ -173,6 +178,15 @@ public sealed class MouseHookService : IDisposable
                                 if (_claim == Source.Hook)
                                     _trigger.OnMouseMove(point);
                                 break; // 移动永不吞
+
+                            case WM_LBUTTONDOWN:
+                                // 轮盘显示期间左键 = 取消（Quicker 同款），吞掉以免点穿到底下程序
+                                if (_claim != Source.None && _trigger.IsShown)
+                                {
+                                    RadialLeftClickCancel?.Invoke();
+                                    return (IntPtr)1;
+                                }
+                                break;
 
                             case WM_RBUTTONUP:
                                 if (_claim == Source.Hook)

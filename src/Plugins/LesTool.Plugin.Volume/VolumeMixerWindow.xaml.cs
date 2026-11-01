@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
@@ -10,15 +11,16 @@ using Serilog;
 namespace LesTool.Plugin.Volume;
 
 /// <summary>
-/// 托盘音量混音器浮窗（EarTrumpet 式）：设备主音量 + 按应用分组的会话音量。
-/// 主屏右下角浮出、失焦/Esc 淡出；可见期间 250ms 轮询刷新（外部改音量同步回来，
-/// 鼠标拖动中的滑块跳过回写防跳变）。会话列表无系统通知，sndvol 同样靠轮询。
+/// 音量混音器浮窗（EarTrumpet 式）：设备主音量 + 按应用分组的会话音量。
+/// 光标所在显示器顶部居中浮出（与命令面板同款锚点）、失焦/Esc 淡出；
+/// 可见期间 250ms 轮询刷新（外部改音量同步回来，鼠标拖动中的滑块跳过回写防跳变）。
+/// 会话列表无系统通知，sndvol 同样靠轮询。
 /// </summary>
 public partial class VolumeMixerWindow : Window
 {
     private const int ActivateGuardMs = 250;
     private const int PollIntervalMs = 250;
-    private const double MarginFromEdge = 12;
+    private const double TopOffsetRatio = 1.0 / 6.0;
 
     private readonly AudioMixerService _audio;
     private readonly DispatcherTimer _timer;
@@ -28,6 +30,7 @@ public partial class VolumeMixerWindow : Window
     private bool _closing;     // 淡出中：忽略 Deactivated
     private int _shownAt;      // 显示时刻：激活未稳的窗口期忽略失焦
     private bool _warnedBrokenVolume; // 音量写入失败只 Toast 一次
+    private Point _anchorPx;   // 最近一次呼出时的光标物理坐标（重摆基准）
 
     /// <summary>淡出收起完成（控制器记日志用）。</summary>
     public event Action? Hidden;
@@ -37,7 +40,14 @@ public partial class VolumeMixerWindow : Window
         _audio = audio;
         InitializeComponent();
 
+        DpiChanged += (_, _) =>
+        {
+            if (IsVisible && !_closing)
+                Reposition();
+        };
+
         _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(PollIntervalMs) };
+        Closed += (_, _) => { _closing = true; _timer.Stop(); BeginAnimation(OpacityProperty, null); };
         _timer.Tick += (_, _) =>
         {
             try
@@ -74,8 +84,9 @@ public partial class VolumeMixerWindow : Window
 
         _closing = false;
         _shownAt = Environment.TickCount;
+        _anchorPx = GdiCapture.GetCursorPosition(); // 呼出前抓光标，定位到所在显示器
         UpdateLayout();
-        PositionBottomRight();
+        Reposition();
 
         Root.Opacity = 0;
         Show();
@@ -102,20 +113,40 @@ public partial class VolumeMixerWindow : Window
         Root.BeginAnimation(UIElement.OpacityProperty, fade);
     }
 
-    /// <summary>托盘左键开关。淡出途中再点视为“继续收”（托盘点击常与失足收起竞争）。</summary>
-    public void ToggleFromTray()
+    /// <summary>命令开关。淡出途中再触发视为“继续收”（连击常与失焦收起竞争）。</summary>
+    public void Toggle()
     {
         if (IsVisible) HideAnimated();
         else Open();
     }
 
-    /// <summary>主屏工作区右下角（托盘旁），底边钉住：列表高度变化时只向上长。</summary>
-    private void PositionBottomRight()
+    /// <summary>按锚点显示器的工作区把窗摆到顶部居中（命令面板同款：上 1/6 处，向下生长）。
+    /// 物理像素直摆 + DPI 变化重摆，定位路线见 PanelShellWindow。</summary>
+    private void Reposition()
     {
-        var area = SystemParameters.WorkArea;
+        if (!IsLoaded) return;
+
+        IntPtr hwnd = new WindowInteropHelper(this).Handle;
+        double scale = GdiCapture.GetMonitorScale(_anchorPx);
+        Rect work = GdiCapture.GetMonitorWorkArea(_anchorPx);
+
         UpdateLayout();
-        Left = area.Right - ActualWidth - MarginFromEdge;
-        Top = area.Bottom - ActualHeight - MarginFromEdge;
+
+        double w = ActualWidth * scale;
+        double h = ActualHeight * scale;
+        double x, y;
+        if (work.IsEmpty)
+        {
+            // 拿不到工作区（极端情形）：退化为以锚点为心
+            x = _anchorPx.X - w / 2;
+            y = _anchorPx.Y - h / 2;
+        }
+        else
+        {
+            x = work.Left + (work.Width - w) / 2;
+            y = work.Top + work.Height * TopOffsetRatio;
+        }
+        GdiCapture.MoveWindowPhys(hwnd, new Rect(x, y, w, h));
     }
 
     // ---------- 数据同步 ----------

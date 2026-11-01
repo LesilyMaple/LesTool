@@ -23,7 +23,7 @@ internal sealed class MixerApp
 /// 会话列表没有可靠的变更通知（sndvol/EarTrumpet 同样靠轮询），这里每次
 /// Refresh 全量重建模型；可见时由 UI 以 250ms 轮询驱动，COM 对象交 GC 回收。
 /// </summary>
-public sealed class AudioMixerService
+public sealed class AudioMixerService : IDisposable
 {
     private IMMDeviceEnumerator? _enumerator;
     private IAudioEndpointVolume? _endpoint;
@@ -339,5 +339,15 @@ public sealed class AudioMixerService
         }
         app.Mute = mute;
         return true;
+    }
+    public void Dispose()
+    {
+        var objects = Apps.SelectMany(app => app.Targets).Cast<object>().ToList();
+        if (_endpoint is not null) objects.Add(_endpoint);
+        if (_enumerator is not null) objects.Add(_enumerator);
+        Apps.Clear(); _endpoint = null; _enumerator = null;
+        foreach (var value in objects.Distinct(ReferenceEqualityComparer.Instance))
+            try { if (Marshal.IsComObject(value)) Marshal.ReleaseComObject(value); }
+            catch (Exception error) { Log.Debug(error, "音频对象释放失败"); }
     }
 }

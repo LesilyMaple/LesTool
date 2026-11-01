@@ -1,0 +1,11 @@
+{
+  "id": "preview",
+  "name": "空格预览",
+  "version": "1.0.0",
+  "description": "资源管理器里按空格快速预览选中文件（文档/表格/图片/音视频）",
+  "icon": "",
+  "minPlatform": "1.3.0",
+  "entryAssembly": "LesTool.Plugin.Preview.dll",
+  "entryType": "LesTool.Plugin.Preview.PreviewPlugin",
+  "apiContract": 1
+}

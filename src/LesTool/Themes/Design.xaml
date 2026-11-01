@@ -3,38 +3,35 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:controls="clr-namespace:LesTool.Platform.Controls;assembly=LesTool.Platform">
     <!--
-      Fluent 设计常量与全局隐式样式（强约束层）。
-      规则：控件不写任何 Style/颜色也自动合规；显式样式可覆盖隐式（仅导航项等特例允许）。
-      主题色画刷在 Themes/Dark|Light.xaml，此处只放与主题无关的规格常量 + 控件模板。
-      详细规范见仓库 DESIGN.md。
+      样式层（手写）：全局隐式样式 + 窗口样式 + 登记的显式样式。
+      数值唯一来源 = design-tokens.json（见仓库根）：
+        - Themes/tokens.xaml 载刻度（emit_tokens.py 生成）
+        - Themes/Dark|Light.xaml 载语义画刷（tools/emit_themes.py 生成，键名与消费端契约一致）
+      本文件不发明任何数值：常量是 tokens.xaml 的别名，画刷一律 DynamicResource 语义键。
+      规范条文见仓库 DESIGN.md。
     -->
 
-    <!-- 圆角：控件 4 / 卡片与浮层 8（Win10 无窗口圆角，系统限制） -->
-    <CornerRadius x:Key="CornerRadiusControl">4</CornerRadius>
-    <CornerRadius x:Key="CornerRadiusOverlay">8</CornerRadius>
-
-    <!-- 自绘标题栏高度 -->
-    <sys:Double x:Key="CaptionHeight">40</sys:Double>
-
-    <!-- Fluent 字号档：Title 28 / Subtitle 20 / Body 14 / Caption 12，禁止其他字号 -->
-    <sys:Double x:Key="FontSizeTitle">28</sys:Double>
-    <sys:Double x:Key="FontSizeSubtitle">20</sys:Double>
+    <!-- ===== 旧契约常量键（字面值 = design-tokens.json 对应刻度；tools/emit_themes.py 校验一致性） =====
+         （BAML 编译器不支持 StaticResource 作资源条目别名，只能落字面值，故以脚本校验代替引用） -->
+    <sys:Double x:Key="FontSizeTitle">24</sys:Double>
+    <sys:Double x:Key="FontSizeSubtitle">18</sys:Double>
     <sys:Double x:Key="FontSizeBody">14</sys:Double>
     <sys:Double x:Key="FontSizeCaption">12</sys:Double>
-
-    <!-- 控件规格：标准高度 32；页面内容边距统一 36,32（4px 网格） -->
+    <CornerRadius x:Key="CornerRadiusControl">6</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusOverlay">10</CornerRadius>
     <sys:Double x:Key="ControlHeight">32</sys:Double>
-    <Thickness x:Key="PagePadding">36,32,36,32</Thickness>
+    <sys:Double x:Key="CaptionHeight">40</sys:Double>
+    <!-- = Space32,Space24,Space32,Space24（space 刻度；Thickness 无法引用组合，值以校验脚本对齐） -->
+    <Thickness x:Key="PagePadding">32,24,32,24</Thickness>
 
-    <!-- 按钮：圆角 4、高 32、hover/pressed 用主题画刷、语义色按钮可覆盖 Background。
-         Fluent 过渡：hover 100ms 淡入 / 150ms 淡出（覆盖层动画，不动 Background 本体） -->
+    <!-- ===== 按钮（隐式 = 次要档；主操作用 PrimaryButtonStyle；层级见 DESIGN.md） ===== -->
     <Style TargetType="Button">
         <Setter Property="Background" Value="{DynamicResource ButtonBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="MinHeight" Value="{StaticResource ControlHeight}"/>
-        <Setter Property="Padding" Value="14,0"/>
+        <Setter Property="Padding" Value="16,0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
@@ -52,6 +49,9 @@
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
+                        <Border x:Name="FocusRing" CornerRadius="{StaticResource CornerRadiusControl}"
+                                BorderBrush="{DynamicResource NavAccent}" BorderThickness="2"
+                                Opacity="0" IsHitTestVisible="False"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -75,6 +75,24 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Hover" Property="Background" Value="{DynamicResource ButtonPressedBackground}"/>
                         </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FocusRing" Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FocusRing" Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.45"/>
                         </Trigger>
@@ -84,7 +102,74 @@
         </Setter>
     </Style>
 
-    <!-- 文本框：圆角 4、高 32、聚焦边框强调色 -->
+    <!-- 主按钮（DESIGN.md 已登记显式特例）：实心强调底，一页至多一个 -->
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource ButtonPrimaryBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ButtonPrimaryForeground}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="{StaticResource CornerRadiusControl}"/>
+                        <Border x:Name="Hover" CornerRadius="{StaticResource CornerRadiusControl}"
+                                Background="{DynamicResource ButtonPrimaryHover}"
+                                Opacity="0" IsHitTestVisible="False"/>
+                        <Border Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border x:Name="FocusRing" CornerRadius="{StaticResource CornerRadiusControl}"
+                                BorderBrush="{DynamicResource NavAccent}" BorderThickness="2"
+                                Opacity="0" IsHitTestVisible="False"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FocusRing" Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FocusRing" Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== 文本框：平贴表面 + 聚焦强调环 ===== -->
     <Style TargetType="TextBox">
         <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
@@ -93,8 +178,9 @@
         <Setter Property="CaretBrush" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="SelectionBrush" Value="{DynamicResource NavAccent}"/>
         <Setter Property="MinHeight" Value="{StaticResource ControlHeight}"/>
-        <Setter Property="Padding" Value="8,5"/>
+        <Setter Property="Padding" Value="12,6"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -106,7 +192,7 @@
                             <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
                                           VerticalAlignment="Center"/>
                         </Border>
-                        <Border x:Name="FocusRing" BorderBrush="{DynamicResource NavAccent}" BorderThickness="1"
+                        <Border x:Name="FocusRing" BorderBrush="{DynamicResource NavAccent}" BorderThickness="2"
                                 CornerRadius="{StaticResource CornerRadiusControl}"
                                 Opacity="0" IsHitTestVisible="False"/>
                     </Grid>
@@ -138,7 +224,7 @@
         </Setter>
     </Style>
 
-    <!-- 复选框：18 方框、选中实心强调色 -->
+    <!-- ===== 复选框：18 方框、选中实心强调色（勾色 = 强调底上的内容色，随主题） ===== -->
     <Style TargetType="CheckBox">
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -148,15 +234,16 @@
                 <ControlTemplate TargetType="CheckBox">
                     <StackPanel Orientation="Horizontal" Background="Transparent">
                         <Grid Width="18" Height="18" VerticalAlignment="Center">
-                            <Border CornerRadius="4"
+                            <Border CornerRadius="{StaticResource CornerRadiusControl}"
                                     Background="{DynamicResource CardBackground}"
                                     BorderBrush="{DynamicResource CardBorderColor}" BorderThickness="1"/>
-                            <Border x:Name="HoverRing" CornerRadius="4"
-                                    BorderBrush="{DynamicResource NavAccent}" BorderThickness="1" Opacity="0"/>
+                            <Border x:Name="HoverRing" CornerRadius="{StaticResource CornerRadiusControl}"
+                                    BorderBrush="{DynamicResource NavAccent}" BorderThickness="2" Opacity="0"/>
                             <Grid x:Name="CheckMark" Opacity="0">
-                                <Border CornerRadius="3" Background="{DynamicResource NavAccent}" Margin="1"/>
+                                <Border CornerRadius="4" Background="{DynamicResource NavAccent}" Margin="2"/>
                                 <Path Data="M 3 8 L 7 12 L 14 4" Stretch="Uniform"
-                                      Width="12" Height="10" Stroke="White" StrokeThickness="2"/>
+                                      Width="12" Height="10"
+                                      Stroke="{DynamicResource AccentForeground}" StrokeThickness="2"/>
                             </Grid>
                         </Grid>
                         <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True"/>
@@ -207,7 +294,7 @@
         </Setter>
     </Style>
 
-    <!-- 单选框：18 圆圈、选中实心点（导航项等已有显式样式不受影响） -->
+    <!-- ===== 单选框：18 圆圈、选中实心点（导航项等显式样式不受影响） ===== -->
     <Style TargetType="RadioButton">
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -219,7 +306,7 @@
                         <Grid Width="18" Height="18" VerticalAlignment="Center">
                             <Ellipse Stroke="{DynamicResource CardBorderColor}" StrokeThickness="1"
                                      Fill="{DynamicResource CardBackground}"/>
-                            <Ellipse x:Name="HoverRing" Stroke="{DynamicResource NavAccent}" StrokeThickness="1"
+                            <Ellipse x:Name="HoverRing" Stroke="{DynamicResource NavAccent}" StrokeThickness="2"
                                      Fill="Transparent" Opacity="0"/>
                             <Ellipse x:Name="Dot" Width="8" Height="8" Fill="{DynamicResource NavAccent}" Opacity="0"/>
                         </Grid>
@@ -270,7 +357,123 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <!-- 常规窗口样式：透明窗口 + 圆角 + 自绘阴影 + 自绘标题栏（配合 Controls/CaptionBar）。
+
+    <!-- ===== 气泡提示（隐式）：所有 ToolTip 自动合规，替换系统灰底 ===== -->
+    <Style TargetType="ToolTip">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="Background" Value="{DynamicResource MenuBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource WindowBorderColor}"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"
+                            CornerRadius="{StaticResource CornerRadiusControl}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== 滚动条：宽/高 8 的胶囊滑块（滑块圆角 4 = 宽的一半，属胶囊几何而非圆角刻度）、
+         透明轨道、无箭头；悬停 100ms 淡入 / 150ms 淡出，轨道空白处点击翻页。
+         滑块色 = 主题键 ScrollBarThumbBrush -->
+    <Style TargetType="{x:Type ScrollBar}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Width" Value="8"/>
+        <Setter Property="MinWidth" Value="8"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                    <Grid Background="Transparent">
+                        <Track x:Name="PART_Track" IsDirectionReversed="True">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton x:Name="PART_Decrease" Focusable="False"
+                                              Command="{x:Static ScrollBar.PageUpCommand}">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Background="Transparent"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton x:Name="PART_Increase" Focusable="False"
+                                              Command="{x:Static ScrollBar.PageDownCommand}">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Background="Transparent"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb x:Name="PART_Thumb" Focusable="False" MinHeight="24">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border x:Name="ThumbBg" CornerRadius="4"
+                                                    Background="{DynamicResource ScrollBarThumbBrush}"
+                                                    Opacity="0.5"/>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="ThumbBg"
+                                                                                 Storyboard.TargetProperty="Opacity"
+                                                                                 To="0.9" Duration="0:0:0.1"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="ThumbBg"
+                                                                                 Storyboard.TargetProperty="Opacity"
+                                                                                 To="0.5" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
+                                                <Trigger Property="IsDragging" Value="True">
+                                                    <Setter TargetName="ThumbBg" Property="Opacity" Value="1"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Horizontal">
+                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
+                            <Setter TargetName="PART_Decrease" Property="Command" Value="{x:Static ScrollBar.PageLeftCommand}"/>
+                            <Setter TargetName="PART_Increase" Property="Command" Value="{x:Static ScrollBar.PageRightCommand}"/>
+                            <Setter TargetName="PART_Thumb" Property="MinHeight" Value="0"/>
+                            <Setter TargetName="PART_Thumb" Property="MinWidth" Value="24"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Width" Value="Auto"/>
+                <Setter Property="MinWidth" Value="0"/>
+                <Setter Property="Height" Value="8"/>
+                <Setter Property="MinHeight" Value="8"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ===== 常规窗口样式：透明窗口 + 圆角 + 自绘描边 + 自绘标题栏（配合 Controls/CaptionBar）。
          Win10 圆角窗口只能走 AllowsTransparency；系统交互（拖拽/Snap/缩放/动画）由
          BorderlessWindow 行为接管——不能用 WindowChrome：它加回的 WS_THICKFRAME 会让
          DWM 在物理边缘画直角边框线，在圆角窗口外围形成直角残影。 -->
@@ -278,15 +481,20 @@
         <Setter Property="WindowStyle" Value="None"/>
         <Setter Property="AllowsTransparency" Value="True"/>
         <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="FontFamily" Value="{DynamicResource FontSans}"/>
         <Setter Property="controls:BorderlessWindow.Enabled" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Window">
-                    <!-- 背景层：不透明主题底色 + 圆角裁剪（唯一裁剪点）；无阴影、无边距 -->
+                    <!-- 背景层：不透明主题底色 + 圆角裁剪（唯一裁剪点）；无阴影（用户拍板）、无边距 -->
                     <Border x:Name="Bg" CornerRadius="{StaticResource CornerRadiusOverlay}"
                             controls:CornerRadiusClip.Enabled="True"
                             Background="{DynamicResource WindowBackground}">
                         <Grid>
+                            <!-- 氛围光层：皮肤可给径向渐变（内置主题为全透明） -->
+                            <Border IsHitTestVisible="False"
+                                    CornerRadius="{StaticResource CornerRadiusOverlay}"
+                                    Background="{DynamicResource WindowGlowOverlay}"/>
                             <ContentPresenter/>
                             <!-- 描边层：全窗口唯一一条边框，置于最上，颜色绝对一致 -->
                             <Border x:Name="BorderLine" IsHitTestVisible="False"
@@ -306,9 +514,10 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <!-- 命令行样式（DESIGN.md 已登记特例）：命令清单的行——命令面板搜索结果、
-         托盘左键动作选择等。行内容（字形/名称/徽标）由消费方给，这里管底色/
-         hover 100/150ms 过渡/选中描边（选中 = 消费方把 BorderBrush 换 NavAccent）。 -->
+
+    <!-- ===== 命令行样式（DESIGN.md 已登记特例）：命令清单的行——命令面板搜索结果等。
+         行内容（字形/名称/徽标）由消费方给，这里管底色/hover 100/150ms 过渡/
+         选中描边（选中 = 消费方把 BorderBrush 换 NavAccent）。 -->
     <Style x:Key="CommandItemStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
@@ -360,83 +569,6 @@
                             <Setter Property="Opacity" Value="0.45"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- 托盘右键菜单（DESIGN.md 已登记特例）：跟主题表面 + 圆角 4 + hover 过渡，
-         仅 TopLevelItem 简单形态（无子菜单/勾选态），复杂菜单仍走默认样式。 -->
-    <Style x:Key="TrayMenuStyle" TargetType="ContextMenu">
-        <Setter Property="Background" Value="{DynamicResource MenuBackground}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource MenuBorderColor}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ContextMenu">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{StaticResource CornerRadiusControl}"
-                            Padding="4">
-                        <ItemsPresenter/>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="TrayMenuItemStyle" TargetType="MenuItem">
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="MenuItem">
-                    <Grid MinHeight="{StaticResource ControlHeight}" MinWidth="152">
-                        <Border x:Name="Hover" CornerRadius="{StaticResource CornerRadiusControl}"
-                                Background="{DynamicResource ButtonHoverBackground}"
-                                Margin="2" Opacity="0" IsHitTestVisible="False"/>
-                        <ContentPresenter ContentSource="Header" Margin="14,0,16,0"
-                                          VerticalAlignment="Center" RecognizesAccessKey="True"/>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsHighlighted" Value="True">
-                            <Trigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity"
-                                                         To="1" Duration="0:0:0.1"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity"
-                                                         To="0" Duration="0:0:0.15"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.ExitActions>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.45"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="TrayMenuSeparatorStyle" TargetType="Separator">
-        <Setter Property="Height" Value="1"/>
-        <Setter Property="Margin" Value="8,4"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Separator">
-                    <Border Background="{DynamicResource MenuBorderColor}"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>LesTool.Plugin.Theme</RootNamespace>
+    <AssemblyName>LesTool.Plugin.Theme</AssemblyName>
+    <Version>1.0.0</Version>
+    <PluginId>theme</PluginId>
+    <HostOutput>$(MSBuildProjectDirectory)\..\..\LesTool\bin\$(Configuration)\net8.0-windows\win-x64</HostOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\LesTool.Platform\LesTool.Platform.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\build\Plugin.Build.targets" />
+
+</Project>

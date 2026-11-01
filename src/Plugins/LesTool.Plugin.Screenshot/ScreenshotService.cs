@@ -16,20 +16,30 @@ namespace LesTool.Plugin.Screenshot;
 internal sealed class ScreenshotService
 {
     private static ScreenshotService? _active;
+    private static bool _stopping;
+    internal static void Initialize() => _stopping = false;
+    internal static void Shutdown()
+    {
+        _stopping = true;
+        _active?.End();
+        if (Application.Current is { } app)
+            foreach (var window in app.Windows.Cast<Window>().Where(w => w.GetType().Assembly == typeof(ScreenshotService).Assembly && w is not RecordFrameWindow && w is not RecordBarWindow).ToArray())
+                try { window.Close(); } catch (Exception error) { Log.Debug(error, "截图窗口关闭失败"); }
+    }
 
     private BitmapSource? _frozen;        // 整块虚拟屏冻结图
     private Rect _virtualBounds;          // 冻结图的物理像素边界
     private SelectionSession? _session;
     private AnnotationState? _annotations;
-    private OcrPanelState? _ocr;
     private List<OverlayWindow>? _overlays;
     private IDisposable? _radialScope;    // 会话期轮盘抑制（RadialGuard 作用域，End 释放）
+    private bool _qrBusy;                 // 二维码识别重入闸（解码器自身无状态，闸按会话挡）
 
     /// <summary>启动一次框选截图。会话进行中重复调用直接忽略。
     /// 先占 _active 再 Begin：Begin 半途失败由 End 幂等收摊（遮罩/抑制不残留）。</summary>
     public static void StartInteractiveCapture()
     {
-        if (_active is not null) return;
+        if (_stopping || _active is not null) return;
         var service = new ScreenshotService();
         _active = service;
         try
@@ -55,10 +65,10 @@ internal sealed class ScreenshotService
         _session.SaveRequested += OnSaveRequested;
         _session.RecordRequested += OnRecordRequested;
         _session.OcrRequested += OnOcrRequested;
+        _session.QrRequested += OnQrRequested;
         _session.LongShotRequested += OnLongShotRequested;
         _session.Cancelled += OnCancelled;
         _annotations = new AnnotationState();
-        _ocr = new OcrPanelState();
 
         var monitors = GdiCapture.GetMonitorBounds();
         if (monitors.Count == 0)
@@ -71,7 +81,7 @@ internal sealed class ScreenshotService
                 (int)(monitor.X - _virtualBounds.X), (int)(monitor.Y - _virtualBounds.Y),
                 (int)monitor.Width, (int)monitor.Height));
             crop.Freeze();
-            _overlays.Add(new OverlayWindow(crop, monitor, _session, _annotations, _ocr, MakeMosaic));
+            _overlays.Add(new OverlayWindow(crop, monitor, _session, _annotations, MakeMosaic));
         }
         // 悬停检测只排除遮罩自己（按 HWND），本应用主窗口仍可被识别框选
         var excluded = _overlays.Select(o => o.Hwnd).ToHashSet();
@@ -217,8 +227,8 @@ internal sealed class ScreenshotService
                 Log.Debug("OCR 忙碌中，忽略本次请求");
                 return;
             }
-            // 识别期间选区变了（或会话已结束），结果不再有效
-            if (_ocr is null || _session is not { Current: SelectionSession.State.Selected } ||
+            // 识别期间会话已结束或选区变了，结果不再有效
+            if (_stopping || _session is not { Current: SelectionSession.State.Selected } ||
                 _session.Selection != selection)
             {
                 Log.Debug("OCR 完成但选区已变化，丢弃结果");
@@ -226,13 +236,70 @@ internal sealed class ScreenshotService
             }
             Log.Information("OCR 完成：选区 {Width}x{Height}，{Lines} 行",
                 (int)selection.Width, (int)selection.Height, lines.Count);
-            _ocr.Set(lines);
+            // QQ 式收尾：独立结果窗接管（左原图右文本），遮罩收摊恢复桌面
+            var result = new OcrResultWindow(crop, lines, selection);
+            result.Show();
+            End();
         }
         catch (Exception ex)
         {
             Log.Error(ex, "OCR 失败");
-            if (_ocr is not null && _session is { Current: SelectionSession.State.Selected })
-                _ocr.Set(new List<ScreenshotOcr.OcrLine> { new($"识别失败：{ex.Message}", Rect.Empty) });
+            if (_session is { Current: SelectionSession.State.Selected })
+                ToastService.Show($"识别失败：{ex.Message}", 4000);
+        }
+    }
+
+    /// <summary>对选区识别二维码：用干净裁剪图（不含标注）。
+    /// 识别到：弹结果卡并收摊；未识别到：Toast 提示且会话保留——失败多半是
+    /// 没框准（框小切掉定位角/框大带进背景），保留选区调整后直接重试，
+    /// 不必从头再截（与 OCR 恒开结果窗不同）。</summary>
+    private async void OnQrRequested(Rect selection)
+    {
+        if (_qrBusy)
+        {
+            Log.Debug("二维码识别忙碌中，忽略本次请求");
+            return;
+        }
+        _qrBusy = true;
+        try
+        {
+            var crop = new CroppedBitmap(_frozen, new Int32Rect(
+                (int)(selection.X - _virtualBounds.X), (int)(selection.Y - _virtualBounds.Y),
+                (int)selection.Width, (int)selection.Height));
+            crop.Freeze();
+
+            QrDecoder.QrResult? qr = await QrDecoder.RunAsync(crop);
+
+            // 识别期间会话已结束或选区变了，结果不再有效
+            if (_session is not { Current: SelectionSession.State.Selected } ||
+                _session.Selection != selection)
+            {
+                Log.Debug("二维码识别完成但选区已变化，丢弃结果");
+                return;
+            }
+
+            if (qr is null)
+            {
+                Log.Information("二维码未识别到：选区 {Width}x{Height}，会话保留待调整重试",
+                    (int)selection.Width, (int)selection.Height);
+                ToastService.Show("未识别到二维码，可调整选区后重试", 4000);
+                return;
+            }
+
+            Log.Information("二维码识别成功：{Kind}，{Chars} 字符",
+                QrDecoder.IsHttpUrl(qr.Text) ? "链接" : "文本", qr.Text.Length);
+            new QrResultWindow(qr, selection).Show();
+            End(); // 结果卡接管，遮罩收摊恢复桌面（与 OCR 同节奏）
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "二维码识别失败");
+            if (_session is { Current: SelectionSession.State.Selected })
+                ToastService.Show($"识别失败：{ex.Message}", 4000);
+        }
+        finally
+        {
+            _qrBusy = false;
         }
     }
 
@@ -332,7 +399,6 @@ internal sealed class ScreenshotService
         _frozen = null;
         _session = null;
         _annotations = null;
-        _ocr = null;
         if (_active == this)
             _active = null;
         try

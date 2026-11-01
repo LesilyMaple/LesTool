@@ -1,8 +1,8 @@
-<UserControl x:Class="LesTool.Views.Pages.SettingsPage"
+﻿<UserControl x:Class="LesTool.Views.Pages.SettingsPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
-        <Style x:Key="ThemeOptionStyle" TargetType="RadioButton">
+        <Style x:Key="OptionCardStyle" TargetType="RadioButton">
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
@@ -10,12 +10,12 @@
                     <ControlTemplate TargetType="RadioButton">
                         <Grid Margin="0,0,12,0">
                             <Border Background="{DynamicResource CardBackground}"
-                                    BorderBrush="{DynamicResource CardBorderColor}" BorderThickness="1.5"
-                                    CornerRadius="8"/>
+                                    BorderBrush="{DynamicResource CardBorderColor}" BorderThickness="1"
+                                    CornerRadius="{StaticResource CornerRadiusOverlay}"/>
                             <Border x:Name="Hover" Background="{DynamicResource NavHoverBackground}"
-                                    CornerRadius="8" Opacity="0"/>
+                                    CornerRadius="{StaticResource CornerRadiusOverlay}" Opacity="0"/>
                             <Border x:Name="SelectedRing" BorderBrush="{DynamicResource NavAccent}"
-                                    BorderThickness="1.5" CornerRadius="8" Opacity="0"/>
+                                    BorderThickness="2" CornerRadius="{StaticResource CornerRadiusOverlay}" Opacity="0"/>
                             <Border Padding="10">
                                 <ContentPresenter/>
                             </Border>
@@ -64,7 +64,7 @@
         </Style>
     </UserControl.Resources>
 
-    <StackPanel Margin="36,32,36,0">
+    <StackPanel x:Name="SettingsRoot" Margin="32,24,32,0">
         <TextBlock Text="设置" FontSize="{DynamicResource FontSizeTitle}"
                    Foreground="{DynamicResource BrandForeground}"/>
         <TextBlock Text="应用级选项，更改即时生效。"
@@ -72,108 +72,57 @@
                    Foreground="{DynamicResource TextSecondary}" Margin="0,8,0,0"/>
 
         <TextBlock Text="颜色主题" FontSize="{DynamicResource FontSizeBody}"
-                   Foreground="{DynamicResource TextPrimary}" Margin="0,28,0,0"/>
+                   Foreground="{DynamicResource TextPrimary}" Margin="0,32,0,0"/>
+        <TextBlock Text="深色与浅色各选一套皮肤；跟随系统开启时按 Windows 深浅自动切换，关闭时用手动点选的那套。"
+                   FontSize="{DynamicResource FontSizeCaption}"
+                   Foreground="{DynamicResource TextSecondary}" Margin="0,8,0,0"/>
+
+        <CheckBox x:Name="FollowSystemCheck" Content="跟随系统主题" Cursor="Hand" Margin="0,16,0,0"
+                  Checked="OnFollowSystemChanged" Unchecked="OnFollowSystemChanged"/>
+
+        <TextBlock Text="深色主题" FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource TextPrimary}" Margin="0,24,0,0"/>
+        <!-- 两组皮肤卡片由代码后置生成（themes\ 目录实扫；预览色块取皮肤真实画刷） -->
+        <StackPanel x:Name="DarkOptionsPanel" Orientation="Horizontal" Margin="0,12,0,0"/>
+
+        <TextBlock Text="浅色主题" FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource TextPrimary}" Margin="0,24,0,0"/>
+        <StackPanel x:Name="LightOptionsPanel" Orientation="Horizontal" Margin="0,12,0,0"/>
+
+        <TextBlock Text="自动清理日志" FontSize="{DynamicResource FontSizeBody}"
+                   Foreground="{DynamicResource TextPrimary}" Margin="0,32,0,0"/>
+        <TextBlock Text="日志按天分文件存放；按所选周期删除更早的日志，更改即时生效。"
+                   FontSize="{DynamicResource FontSizeCaption}"
+                   Foreground="{DynamicResource TextSecondary}" Margin="0,8,0,0"/>
 
         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-            <RadioButton x:Name="DarkOption" Style="{StaticResource ThemeOptionStyle}"
-                         Tag="Dark" Checked="OnThemeChecked">
-                <StackPanel>
-                    <!-- 迷你预览：硬编码该主题代表色，不随当前主题变 -->
-                    <Border Width="112" Height="64" CornerRadius="4" Background="#202028">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <Border Background="#2A2A32"/>
-                            <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="28"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Background="#17171E"/>
-                                <Border Grid.Column="1" Background="#26262E" Margin="4">
-                                    <Rectangle Width="34" Height="8" Fill="#3A3A4A" RadiusX="2" RadiusY="2"/>
-                                </Border>
-                            </Grid>
-                        </Grid>
-                    </Border>
-                    <TextBlock Text="深色" FontSize="{DynamicResource FontSizeCaption}" HorizontalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimary}" Margin="0,8,0,0"/>
+            <RadioButton x:Name="LogDailyOption" Style="{StaticResource OptionCardStyle}"
+                         Tag="Daily" Checked="OnLogRetentionChecked">
+                <StackPanel Width="112">
+                    <TextBlock Text="每天" FontSize="{DynamicResource FontSizeBody}"
+                               Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBlock Text="保留最近 1 天" FontSize="{DynamicResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,4,0,6"/>
                 </StackPanel>
             </RadioButton>
 
-            <RadioButton x:Name="LightOption" Style="{StaticResource ThemeOptionStyle}"
-                         Tag="Light" Checked="OnThemeChecked">
-                <StackPanel>
-                    <Border Width="112" Height="64" CornerRadius="4" Background="#F4F4F8"
-                            BorderBrush="#DCDCE4" BorderThickness="1">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <Border Background="#FFFFFF"/>
-                            <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="28"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Background="#ECECF2"/>
-                                <Border Grid.Column="1" Background="#FFFFFF" Margin="4">
-                                    <Rectangle Width="34" Height="8" Fill="#D8D8E6" RadiusX="2" RadiusY="2"/>
-                                </Border>
-                            </Grid>
-                        </Grid>
-                    </Border>
-                    <TextBlock Text="浅色" FontSize="{DynamicResource FontSizeCaption}" HorizontalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimary}" Margin="0,8,0,0"/>
+            <RadioButton x:Name="LogWeeklyOption" Style="{StaticResource OptionCardStyle}"
+                         Tag="Weekly" Checked="OnLogRetentionChecked">
+                <StackPanel Width="112">
+                    <TextBlock Text="每周" FontSize="{DynamicResource FontSizeBody}"
+                               Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBlock Text="保留最近 7 天" FontSize="{DynamicResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,4,0,6"/>
                 </StackPanel>
             </RadioButton>
 
-            <RadioButton x:Name="SystemOption" Style="{StaticResource ThemeOptionStyle}"
-                         Tag="System" Checked="OnThemeChecked">
-                <StackPanel>
-                    <Border Width="112" Height="64" CornerRadius="4" BorderThickness="1">
-                        <Border.BorderBrush>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="#2A2A32" Offset="0"/>
-                                <GradientStop Color="#2A2A32" Offset="0.5"/>
-                                <GradientStop Color="#DCDCE4" Offset="0.5"/>
-                                <GradientStop Color="#DCDCE4" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.BorderBrush>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <!-- 左半：深色预览 -->
-                            <Border Background="#202028">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="10"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <Border Background="#2A2A32"/>
-                                    <Border Grid.Row="1" Background="#26262E" Margin="0,4,2,4"/>
-                                </Grid>
-                            </Border>
-                            <!-- 右半：浅色预览 -->
-                            <Border Grid.Column="1" Background="#F4F4F8">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="10"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <Border Background="#FFFFFF"/>
-                                    <Border Grid.Row="1" Background="#FFFFFF" Margin="2,4,0,4"/>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </Border>
-                    <TextBlock Text="跟随系统" FontSize="{DynamicResource FontSizeCaption}" HorizontalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimary}" Margin="0,8,0,0"/>
+            <RadioButton x:Name="LogMonthlyOption" Style="{StaticResource OptionCardStyle}"
+                         Tag="Monthly" Checked="OnLogRetentionChecked">
+                <StackPanel Width="112">
+                    <TextBlock Text="每月" FontSize="{DynamicResource FontSizeBody}"
+                               Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBlock Text="保留最近 30 天" FontSize="{DynamicResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,4,0,6"/>
                 </StackPanel>
             </RadioButton>
         </StackPanel>

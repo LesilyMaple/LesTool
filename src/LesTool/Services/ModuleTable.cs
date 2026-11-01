@@ -24,15 +24,22 @@ internal sealed class ModuleTable
         for (var i = 0; i < _modules.Count; i++)
         {
             Log.Debug("模块初始化：{Name}", _modules[i].Name);
-            _modules[i].Initialize();
-            _initialized = i;
+            try { _modules[i].Initialize(); _initialized = i; }
+            catch
+            {
+                try { _modules[i].Shutdown?.Invoke(); } catch (Exception cleanup) { Log.Error(cleanup, "失败模块清理异常：{Name}", _modules[i].Name); }
+                ShutdownAll();
+                throw;
+            }
         }
         Log.Information("全部 {Count} 个模块就绪", _modules.Count);
     }
 
     public void ShutdownAll()
     {
-        for (var i = _initialized; i >= 0; i--)
+        var initialized = _initialized;
+        _initialized = -1;
+        for (var i = initialized; i >= 0; i--)
         {
             try
             {

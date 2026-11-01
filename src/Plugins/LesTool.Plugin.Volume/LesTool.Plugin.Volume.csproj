@@ -16,13 +16,6 @@
     <ProjectReference Include="..\..\LesTool.Platform\LesTool.Platform.csproj" />
   </ItemGroup>
 
-  <Target Name="DeployToHost" AfterTargets="Build" Condition="Exists('$(HostOutput)')">
-    <ItemGroup>
-      <PluginDlls Include="$(TargetDir)*.dll" Exclude="$(TargetDir)LesTool.Platform.dll;$(TargetDir)Serilog.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(PluginDlls)" DestinationFolder="$(HostOutput)\plugins\$(PluginId)\" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\plugin.json"
-          DestinationFiles="$(HostOutput)\plugins\$(PluginId)\plugin.json" SkipUnchangedFiles="true" />
-  </Target>
+  <Import Project="..\..\..\build\Plugin.Build.targets" />
 
 </Project>

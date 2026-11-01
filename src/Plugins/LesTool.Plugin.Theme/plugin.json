@@ -1,0 +1,11 @@
+{
+  "id": "theme",
+  "name": "系统深浅色",
+  "version": "1.0.0",
+  "description": "切换 Windows 系统深色/浅色模式（应用、任务栏、开始菜单一起切）",
+  "icon": "",
+  "minPlatform": "1.3.0",
+  "entryAssembly": "LesTool.Plugin.Theme.dll",
+  "entryType": "LesTool.Plugin.Theme.ThemePlugin",
+  "apiContract": 1
+}

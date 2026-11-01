@@ -1,59 +1,52 @@
 using LesTool.Platform;
+using LesTool.Services.Plugins;
 using Serilog;
-
 namespace LesTool.Services;
 
-/// <summary>
-/// 全局命令注册表——所有触发源（热键/命令面板/托盘，将来轮盘槽位与插件装载器）
-/// 共用的唯一动作清单。App 启动时登记可用命令（依赖运行期实例的回调闭包在这里注入，
-/// 页面不做静态耦合），触发后按 Id 派发，并按 Requires 惰性构建上下文。
-/// 新模块加命令只需一行 Register；这个 Register 签名就是将来的公共插件 API
-/// （命令模型 LesCommand/LesContext 已上收到 LesTool.Platform 契约程序集）。
-/// 派发默认发生在 UI 线程（热键 WM_HOTKEY 即在 UI 线程消息窗口上分发），
-/// 上下文构建依赖此约定。注册须在 UI 线程（List/Dictionary 非线程安全）。
-/// </summary>
+/// <summary>Compatibility facade; all entries and execution live in one catalog/executor.</summary>
 public static class ActionRegistry
 {
-    private static readonly List<LesCommand> _ordered = new();
-    private static readonly Dictionary<string, LesCommand> _byId = new();
-
-    public static IReadOnlyList<LesCommand> All => _ordered;
-
-    public static void Register(string id, string name, string glyph, Action<LesContext> callback,
-        CommandKind kind = CommandKind.Builtin, string keywords = "", ContextKind requires = ContextKind.None)
-    {
-        var command = new LesCommand(id, name, glyph, keywords, kind, requires, callback);
-        var index = _ordered.FindIndex(c => c.Id == id);
-        if (index >= 0) _ordered[index] = command;
-        else _ordered.Add(command);
-        _byId[id] = command;
-    }
-
-    public static LesCommand? Find(string id) => _byId.TryGetValue(id, out var command) ? command : null;
-
+    private static readonly CommandCatalog Catalog = new();
+    private static readonly CommandExecutor Executor = new(Catalog);
+    private static readonly CancellationTokenSource Stopping = new();
+    private static readonly HashSet<Task> InFlight = new();
+    private static readonly object FlightGate = new();
+    public static IReadOnlyList<LesCommand> ForScenario(CommandScenarios scenario) => Catalog.ForScenario(scenario);
+    public static LesCommand? Find(string id) => Catalog.Find(id)?.Metadata;
     public static string NameOf(string id) => Find(id)?.Name ?? id;
-
-    public static void Execute(string id)
+    public static void Register(string id, string name, string glyph, Action<LesContext> callback,
+        CommandKind kind = CommandKind.Builtin, string keywords = "", ContextKind requires = ContextKind.None,
+        CommandScenarios scenarios = CommandScenarios.All, ContextKind optional = ContextKind.None) =>
+        AddBatch(new[] { new LesCommand(id, name, glyph, keywords, kind, scenarios, requires, optional, callback) });
+    internal static void AddBatch(IReadOnlyList<LesCommand> commands, PluginRuntime? owner = null,
+        IReadOnlyDictionary<string, Func<LesContext, CancellationToken, Task>>? handlers = null,
+        IReadOnlyDictionary<string, CommandConcurrency>? policies = null) => Catalog.AddBatch(commands, owner, handlers, policies);
+    internal static void RemoveBatch(IEnumerable<LesCommand> commands) => Catalog.RemoveBatch(commands);
+    public static void Execute(string id, TriggerSource source, TriggerSnapshot? snapshot = null) => _ = ObserveAsync(id, source, snapshot);
+    private static async Task ObserveAsync(string id, TriggerSource source, TriggerSnapshot? snapshot)
     {
-        if (!_byId.TryGetValue(id, out var command))
+        try { await ExecuteAsync(id, source, snapshot); }
+        catch (Exception error) { Log.Error(error, "命令入口失败：{Id}", id); }
+    }
+    public static async Task<CommandResult> ExecuteAsync(string id, TriggerSource source, TriggerSnapshot? snapshot = null)
+    {
+        if (Stopping.IsCancellationRequested) return CommandResult.Cancelled;
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        lock (FlightGate) InFlight.Add(completion.Task);
+        try { return await Executor.ExecuteAsync(id, TriggerEnvelope.Capture(source, snapshot), Stopping.Token); }
+        finally
         {
-            Log.Warning("未知命令：{Id}", id);
-            return;
+            completion.TrySetResult();
+            lock (FlightGate) InFlight.Remove(completion.Task);
         }
-
-        // 上下文按声明惰性获取；获取部分失败只置空字段，不阻断派发
-        LesContext context = command.Requires == ContextKind.None
-            ? LesContext.Empty
-            : ContextProvider.Build(command.Requires);
-
-        Log.Information("派发命令：{Id}（来源上下文 {Kind}）", id, command.Requires);
-        try
-        {
-            command.Callback(context);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "命令执行失败：{Id}", id);
-        }
+    }
+    internal static void Stop()
+    {
+        try { Stopping.Cancel(); } catch (Exception error) { Log.Error(error, "命令取消回调失败"); }
+    }
+    internal static async Task DrainAsync()
+    {
+        Task[] tasks; lock (FlightGate) tasks = InFlight.ToArray();
+        await Task.WhenAll(tasks);
     }
 }

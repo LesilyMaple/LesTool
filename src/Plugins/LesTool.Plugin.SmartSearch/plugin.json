@@ -1,0 +1,11 @@
+{
+  "id": "smartsearch",
+  "name": "智能搜索",
+  "version": "1.0.0",
+  "description": "取选中文字弹出搜索浮窗，关键词直达或搜索引擎检索",
+  "icon": "",
+  "minPlatform": "1.3.0",
+  "entryAssembly": "LesTool.Plugin.SmartSearch.dll",
+  "entryType": "LesTool.Plugin.SmartSearch.SmartSearchPlugin",
+  "apiContract": 1
+}

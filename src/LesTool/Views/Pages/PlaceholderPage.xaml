@@ -6,6 +6,6 @@
                    Foreground="{DynamicResource BrandForeground}" HorizontalAlignment="Center"/>
         <TextBlock x:Name="MessageText" FontSize="{DynamicResource FontSizeBody}"
                    Foreground="{DynamicResource TextSecondary}"
-                   Margin="0,10,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
+                   Margin="0,12,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
     </StackPanel>
 </UserControl>

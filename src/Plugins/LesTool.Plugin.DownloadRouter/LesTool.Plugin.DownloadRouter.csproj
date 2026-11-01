@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- WPF 工程 ImplicitUsings 不含 System.IO（browser 插件踩过的坑），本插件满篇文件操作，各文件显式 using System.IO -->
+    <RootNamespace>LesTool.Plugin.DownloadRouter</RootNamespace>
+    <AssemblyName>LesTool.Plugin.DownloadRouter</AssemblyName>
+    <Version>1.0.0</Version>
+    <PluginId>downloads</PluginId>
+    <HostOutput>$(MSBuildProjectDirectory)\..\..\LesTool\bin\$(Configuration)\net8.0-windows\win-x64</HostOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\LesTool.Platform\LesTool.Platform.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\build\Plugin.Build.targets" />
+
+</Project>

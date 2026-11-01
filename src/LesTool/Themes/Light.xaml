@@ -1,55 +1,51 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- 浅色主题 -->
+    <!-- 浅色主题（由 tools/emit_themes.py 从 design-tokens.json 生成，勿手改；改 JSON 后重跑） -->
 
-    <SolidColorBrush x:Key="WindowBackground" Color="#F4F4F8"/>
-    <SolidColorBrush x:Key="WindowBorderColor" Color="#C8C8D4"/>
-    <SolidColorBrush x:Key="MenuBackground" Color="#ECECF2"/>
-    <SolidColorBrush x:Key="MenuBorderColor" Color="#DCDCE4"/>
-
-    <SolidColorBrush x:Key="BrandForeground" Color="#1E1E28"/>
-    <SolidColorBrush x:Key="TextPrimary" Color="#2A2A36"/>
-    <SolidColorBrush x:Key="TextSecondary" Color="#6A6A7A"/>
-    <SolidColorBrush x:Key="TextHint" Color="#9A9AA8"/>
-
-    <SolidColorBrush x:Key="GroupForeground" Color="#8A8A9A"/>
-    <SolidColorBrush x:Key="NavItemForeground" Color="#3C3C4A"/>
-    <SolidColorBrush x:Key="NavHoverBackground" Color="#DFDFE8"/>
-    <SolidColorBrush x:Key="NavSelectedBackground" Color="#D8D8E6"/>
-    <SolidColorBrush x:Key="NavSelectedForeground" Color="#1E1E28"/>
-    <SolidColorBrush x:Key="NavAccent" Color="#4C6FE0"/>
-
-    <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="CardBorderColor" Color="#E0E0E8"/>
-
-    <SolidColorBrush x:Key="ButtonBackground" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="ButtonBorderColor" Color="#C8C8D4"/>
-    <SolidColorBrush x:Key="ButtonForeground" Color="#1E1E28"/>
-    <SolidColorBrush x:Key="ButtonHoverBackground" Color="#F0F0F5"/>
-    <SolidColorBrush x:Key="ButtonPressedBackground" Color="#E4E4EC"/>
-
-    <SolidColorBrush x:Key="DangerBrush" Color="#D13438"/>
-    <SolidColorBrush x:Key="SuccessBrush" Color="#107C10"/>
-
-    <!-- 音量混音器滑杆（DESIGN.md 特例 MixerSliderStyle 引用）：轨道/圆点/静音弱化填充 -->
-    <SolidColorBrush x:Key="SliderTrackBrush" Color="#D8D8E2"/>
-    <SolidColorBrush x:Key="SliderThumbBrush" Color="#3A3A48"/>
-    <SolidColorBrush x:Key="SliderMutedFillBrush" Color="#594C6FE0"/>
-
-    <!-- 命令面板（面板窗一档）：跟主题的浮层表面，微透出底色 -->
-    <SolidColorBrush x:Key="PanelBackground" Color="#F4FAFAFC"/>
-
-    <!-- 录制预览窗底部控制条（视频区保持黑色，播放器惯例） -->
-    <SolidColorBrush x:Key="PlayerBarBackground" Color="#E6F6F6FA"/>
-
-    <!-- 截图工具栏/录制控制条等悬浮条：深浅两套，工具栏随主题切换 -->
-    <SolidColorBrush x:Key="OverlayBarBackground" Color="#E6F6F6FA"/>
-    <SolidColorBrush x:Key="OverlayIconStroke" Color="#FF202028"/>
-    <SolidColorBrush x:Key="OverlayTextBrush" Color="#CC2A2A36"/>
-    <SolidColorBrush x:Key="OverlayHoverBrush" Color="#14000000"/>
-    <SolidColorBrush x:Key="OverlayActiveBrush" Color="#1F000000"/>
-    <SolidColorBrush x:Key="OverlaySeparator" Color="#33000000"/>
-    <SolidColorBrush x:Key="OverlaySeparatorStrong" Color="#47000000"/>
-    <SolidColorBrush x:Key="OverlaySliderTrack" Color="#33000000"/>
-    <SolidColorBrush x:Key="OverlaySliderFill" Color="#59000000"/>
+    <SolidColorBrush x:Key="WindowBackground" Color="#FFE1EAEF"/>
+    <SolidColorBrush x:Key="WindowBorderColor" Color="#FFA8B6C0"/>
+    <SolidColorBrush x:Key="MenuBackground" Color="#FFC4D1D8"/>
+    <SolidColorBrush x:Key="MenuBorderColor" Color="#FFA8B6C0"/>
+    <SolidColorBrush x:Key="BrandForeground" Color="#FF181929"/>
+    <SolidColorBrush x:Key="TextPrimary" Color="#FF303345"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="#FF50566A"/>
+    <SolidColorBrush x:Key="TextHint" Color="#FF60687D"/>
+    <SolidColorBrush x:Key="GroupForeground" Color="#FF60687D"/>
+    <SolidColorBrush x:Key="NavItemForeground" Color="#FF50566A"/>
+    <SolidColorBrush x:Key="NavHoverBackground" Color="#FFA8B6C0"/>
+    <SolidColorBrush x:Key="NavSelectedBackground" Color="#FFA8B6C0"/>
+    <SolidColorBrush x:Key="NavSelectedForeground" Color="#FF181929"/>
+    <SolidColorBrush x:Key="NavAccent" Color="#FF2E4DCE"/>
+    <SolidColorBrush x:Key="AccentForeground" Color="#FFF0F6FA"/>
+    <SolidColorBrush x:Key="CardBackground" Color="#FFF0F6FA"/>
+    <SolidColorBrush x:Key="CardBorderColor" Color="#FFA8B6C0"/>
+    <SolidColorBrush x:Key="ButtonBackground" Color="#FFF0F6FA"/>
+    <SolidColorBrush x:Key="ButtonBorderColor" Color="#FFA8B6C0"/>
+    <SolidColorBrush x:Key="ButtonForeground" Color="#FF303345"/>
+    <SolidColorBrush x:Key="ButtonHoverBackground" Color="#FFC4D1D8"/>
+    <SolidColorBrush x:Key="ButtonPressedBackground" Color="#FFA8B6C0"/>
+    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#FF2E4DCE"/>
+    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#FF1D34AF"/>
+    <SolidColorBrush x:Key="ButtonPrimaryForeground" Color="#FFF0F6FA"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#FFBA2528"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#FF14702B"/>
+    <SolidColorBrush x:Key="SliderTrackBrush" Color="#FFC4D1D8"/>
+    <SolidColorBrush x:Key="SliderThumbBrush" Color="#FF50566A"/>
+    <SolidColorBrush x:Key="SliderMutedFillBrush" Color="#592E4DCE"/>
+    <SolidColorBrush x:Key="ScrollbarThumbBrush" Color="#FF60687D"/>
+    <SolidColorBrush x:Key="PanelBackground" Color="#FFF6FBFD"/>
+    <SolidColorBrush x:Key="PlayerBarBackground" Color="#E6E1EAEF"/>
+    <SolidColorBrush x:Key="OverlayBarBackground" Color="#E6E1EAEF"/>
+    <SolidColorBrush x:Key="OverlayIconStroke" Color="#FF303345"/>
+    <SolidColorBrush x:Key="OverlayTextBrush" Color="#CC303345"/>
+    <SolidColorBrush x:Key="OverlayHoverBrush" Color="#14181929"/>
+    <SolidColorBrush x:Key="OverlayActiveBrush" Color="#1F181929"/>
+    <SolidColorBrush x:Key="OverlaySeparator" Color="#33181929"/>
+    <SolidColorBrush x:Key="OverlaySeparatorStrong" Color="#4D181929"/>
+    <SolidColorBrush x:Key="OverlaySliderTrack" Color="#33181929"/>
+    <SolidColorBrush x:Key="OverlaySliderFill" Color="#59181929"/>
+    <SolidColorBrush x:Key="RadialSectorActiveBrush" Color="#662E4DCE"/>
+    <SolidColorBrush x:Key="CaptionCloseBackground" Color="#FFBA2528"/>
+    <SolidColorBrush x:Key="CaptionClosePressedBackground" Color="#FFA1181A"/>
+    <SolidColorBrush x:Key="WindowGlowOverlay" Color="#00FFFFFF"/>
 </ResourceDictionary>

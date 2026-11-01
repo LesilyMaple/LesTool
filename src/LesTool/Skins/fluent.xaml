@@ -1,0 +1,57 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- 皮肤包「Fluent 2」：由 tools/emit_themes.py 从 design-skins.json 生成（勿手改；改 JSON 后重跑）。
+         部署位置 themes\fluent.xaml；热重载=直接保存本文件。缺省键热加载时回落内置深色。
+         对比度门禁：14 对全过（透明色按叠加实算）。 -->
+
+    <sys:String x:Key="SkinMeta.Id">fluent</sys:String>
+    <sys:String x:Key="SkinMeta.Name">Fluent 2</sys:String>
+    <sys:Boolean x:Key="SkinMeta.IsLight">true</sys:Boolean>
+    <sys:Boolean x:Key="SkinMeta.Acrylic">false</sys:Boolean>
+    <SolidColorBrush x:Key="WindowBackground" Color="#FFECF1F4"/>
+    <SolidColorBrush x:Key="WindowBorderColor" Color="#FFB0BABF"/>
+    <SolidColorBrush x:Key="MenuBackground" Color="#FFCDD6DA"/>
+    <SolidColorBrush x:Key="MenuBorderColor" Color="#FFB0BABF"/>
+    <SolidColorBrush x:Key="BrandForeground" Color="#FF333642"/>
+    <SolidColorBrush x:Key="TextPrimary" Color="#FF333642"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="#FF545966"/>
+    <SolidColorBrush x:Key="TextHint" Color="#FF656A78"/>
+    <SolidColorBrush x:Key="GroupForeground" Color="#FF656A78"/>
+    <SolidColorBrush x:Key="NavItemForeground" Color="#FF545966"/>
+    <SolidColorBrush x:Key="NavHoverBackground" Color="#FFB0BABF"/>
+    <SolidColorBrush x:Key="NavSelectedBackground" Color="#FFB0BABF"/>
+    <SolidColorBrush x:Key="NavSelectedForeground" Color="#FF1B1C26"/>
+    <SolidColorBrush x:Key="NavAccent" Color="#FF0051AB"/>
+    <SolidColorBrush x:Key="AccentForeground" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="CardBackground" Color="#FFF5F9FB"/>
+    <SolidColorBrush x:Key="CardBorderColor" Color="#FFB0BABF"/>
+    <SolidColorBrush x:Key="ButtonBackground" Color="#FFF5F9FB"/>
+    <SolidColorBrush x:Key="ButtonBorderColor" Color="#FFB0BABF"/>
+    <SolidColorBrush x:Key="ButtonForeground" Color="#FF333642"/>
+    <SolidColorBrush x:Key="ButtonHoverBackground" Color="#FFCDD6DA"/>
+    <SolidColorBrush x:Key="ButtonPressedBackground" Color="#FFB0BABF"/>
+    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#FF0067C0"/>
+    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#FF0051AB"/>
+    <SolidColorBrush x:Key="ButtonPrimaryForeground" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#FFBA2528"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#FF14702B"/>
+    <SolidColorBrush x:Key="SliderTrackBrush" Color="#FFCDD6DA"/>
+    <SolidColorBrush x:Key="SliderThumbBrush" Color="#FF444754"/>
+    <SolidColorBrush x:Key="SliderMutedFillBrush" Color="#590051AB"/>
+    <SolidColorBrush x:Key="ScrollbarThumbBrush" Color="#FF757C8A"/>
+    <SolidColorBrush x:Key="PanelBackground" Color="#FFECF1F4"/>
+    <SolidColorBrush x:Key="PlayerBarBackground" Color="#E6ECF1F4"/>
+    <SolidColorBrush x:Key="OverlayBarBackground" Color="#E6ECF1F4"/>
+    <SolidColorBrush x:Key="OverlayIconStroke" Color="#FF333642"/>
+    <SolidColorBrush x:Key="OverlayTextBrush" Color="#CC333642"/>
+    <SolidColorBrush x:Key="OverlayHoverBrush" Color="#141B1C26"/>
+    <SolidColorBrush x:Key="OverlayActiveBrush" Color="#1F1B1C26"/>
+    <SolidColorBrush x:Key="OverlaySeparator" Color="#331B1C26"/>
+    <SolidColorBrush x:Key="OverlaySeparatorStrong" Color="#4D1B1C26"/>
+    <SolidColorBrush x:Key="OverlaySliderTrack" Color="#331B1C26"/>
+    <SolidColorBrush x:Key="OverlaySliderFill" Color="#591B1C26"/>
+    <SolidColorBrush x:Key="RadialSectorActiveBrush" Color="#660051AB"/>
+    <SolidColorBrush x:Key="CaptionCloseBackground" Color="#FFBA2528"/>
+    <SolidColorBrush x:Key="CaptionClosePressedBackground" Color="#FFA1181A"/>
+</ResourceDictionary>

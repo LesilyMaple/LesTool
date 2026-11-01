@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/LesTool/LesTool.csproj" />
+    <ProjectReference Include="../../src/Plugins/LesTool.Plugin.DownloadRouter/LesTool.Plugin.DownloadRouter.csproj" />
+    <ProjectReference Include="../Fixtures/PluginA/PluginA.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Fixtures/PluginB/PluginB.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+</Project>

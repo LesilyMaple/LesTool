@@ -45,6 +45,9 @@ internal sealed class SelectionSession
     /// <summary>文字识别。参数为选区（物理像素）。</summary>
     public event Action<Rect>? OcrRequested;
 
+    /// <summary>二维码识别。参数为选区（物理像素）。</summary>
+    public event Action<Rect>? QrRequested;
+
     /// <summary>长截图。参数为选区（物理像素）。</summary>
     public event Action<Rect>? LongShotRequested;
 
@@ -196,6 +199,16 @@ internal sealed class SelectionSession
             Selection.Width >= MinSize && Selection.Height >= MinSize)
         {
             OcrRequested?.Invoke(Selection);
+        }
+    }
+
+    /// <summary>对选区识别二维码；仅在已有有效选区时生效。</summary>
+    public void RequestQr()
+    {
+        if (Current == State.Selected &&
+            Selection.Width >= MinSize && Selection.Height >= MinSize)
+        {
+            QrRequested?.Invoke(Selection);
         }
     }
 

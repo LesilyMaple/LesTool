@@ -21,7 +21,13 @@ public enum HotkeyRegState
     Registered,
 
     /// <summary>注册失败：被其他程序占用，或为系统保留组合（如 Win+L）。</summary>
-    Conflict
+    Conflict,
+    DisabledByUser,
+    Unavailable,
+    PluginDisabled,
+    PluginFailed,
+    UnsupportedScenario,
+    InvalidKeys
 }
 
 /// <summary>
@@ -60,6 +66,19 @@ public static class HotkeyService
         Log.Debug("热键消息窗口就绪");
     }
 
+    public static void Stop()
+    {
+        if (_source is null) return;
+        foreach (var id in _registeredIds) UnregisterHotKey(_source.Handle, id);
+        _registeredIds.Clear();
+        _idToIndex.Clear();
+        _statesByIndex.Clear();
+        _bindings.Clear();
+        _source.RemoveHook(WndProc);
+        _source.Dispose();
+        _source = null;
+    }
+
     private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         if (msg == WmHotkey
@@ -91,9 +110,14 @@ public static class HotkeyService
         for (var i = 0; i < _bindings.Count; i++)
         {
             var binding = _bindings[i];
-            if (!binding.Enabled || string.IsNullOrWhiteSpace(binding.Keys)) continue;
+            if (HotkeyBindingResolver.UnavailableState(binding) is { } unavailable)
+            {
+                _statesByIndex[i] = unavailable;
+                continue;
+            }
             if (!TryParseKeys(binding.Keys, out var modifiers, out var vk))
             {
+                _statesByIndex[i] = HotkeyRegState.InvalidKeys;
                 Log.Warning("热键解析失败，跳过：{Keys}", binding.Keys);
                 continue;
             }
@@ -122,7 +146,7 @@ public static class HotkeyService
 
     /// <summary>某条绑定的实际注册状态；null 表示未注册（键为空或行已停用）。</summary>
     public static HotkeyRegState? StateOf(HotkeyBinding binding) =>
-        binding.Enabled && _bindings.IndexOf(binding) is var index && index >= 0
+        _bindings.IndexOf(binding) is var index && index >= 0
         && _statesByIndex.TryGetValue(index, out var state)
             ? state
             : null;
@@ -152,29 +176,29 @@ public static class HotkeyService
                || name.StartsWith("Browser", StringComparison.Ordinal);
     }
 
-    private static bool TryParseKeys(string keys, out uint modifiers, out uint vk)
+    internal static bool TryParseKeys(string keys, out uint modifiers, out uint vk)
     {
         modifiers = 0;
         vk = 0;
         foreach (var segment in keys.Split('+'))
         {
-            switch (segment.Trim())
+            switch (segment.Trim().ToUpperInvariant())
             {
-                case "Ctrl":
+                case "CTRL":
                     modifiers |= ModControl;
                     continue;
-                case "Alt":
+                case "ALT":
                     modifiers |= ModAlt;
                     continue;
-                case "Shift":
+                case "SHIFT":
                     modifiers |= ModShift;
                     continue;
-                case "Win":
+                case "WIN":
                     modifiers |= ModWin;
                     continue;
             }
 
-            if (vk != 0 || !Enum.TryParse<Key>(segment.Trim(), out var key)) return false;
+            if (vk != 0 || !Enum.TryParse<Key>(segment.Trim(), true, out var key)) return false;
             vk = (uint)KeyInterop.VirtualKeyFromKey(key);
         }
 

@@ -1,0 +1,19 @@
+name: Windows verification
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build, behavioral checks, package and plugin diagnostics
+        run: python tools/package.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LesTool-win-x64
+          path: artifacts/releases/LesTool-*.zip

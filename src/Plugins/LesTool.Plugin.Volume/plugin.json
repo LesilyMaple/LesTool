@@ -1,0 +1,8 @@
+{
+  "id": "volume",
+  "name": "音量混音器",
+  "version": "1.0.0",
+  "minPlatform": "1.0.0",
+  "entryAssembly": "LesTool.Plugin.Volume.dll",
+  "entryType": "LesTool.Plugin.Volume.VolumeMixerPlugin"
+}

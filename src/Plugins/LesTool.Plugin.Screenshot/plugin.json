@@ -1,0 +1,8 @@
+{
+  "id": "screenshot",
+  "name": "截图",
+  "version": "1.0.0",
+  "minPlatform": "1.0.0",
+  "entryAssembly": "LesTool.Plugin.Screenshot.dll",
+  "entryType": "LesTool.Plugin.Screenshot.ScreenshotPlugin"
+}

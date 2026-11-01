@@ -20,6 +20,9 @@ public sealed class RadialTrigger
     private bool _shown;
     private Point _origin;
 
+    /// <summary>当前手势是否已越过阈值弹出轮盘（拦截决策用：松开时回放单击还是整段吞掉）。</summary>
+    public bool IsShown => _shown;
+
     public void OnRightButtonDown(Point point)
     {
         _tracking = true;

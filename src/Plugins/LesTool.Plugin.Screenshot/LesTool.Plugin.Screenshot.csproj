@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>LesTool.Plugin.Screenshot</RootNamespace>
+    <AssemblyName>LesTool.Plugin.Screenshot</AssemblyName>
+    <Version>1.0.0</Version>
+    <PluginId>screenshot</PluginId>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- 库工程默认不把包程序集拷进 bin；插件产物要整体部署，强制落地（含原生库） -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- RID 指定后原生库（onnxruntime/skia）平铺在输出根目录，随 *.dll 一起部署；
+         宿主装载器对本插件目录调 AddDllDirectory，原生解析直达 -->
+    <HostOutput>$(MSBuildProjectDirectory)\..\..\LesTool\bin\$(Configuration)\net8.0-windows\win-x64</HostOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RapidOcrNet" Version="4.2.0" />
+    <ProjectReference Include="..\..\LesTool.Platform\LesTool.Platform.csproj" />
+  </ItemGroup>
+
+  <!-- 构建即部署：dll（含原生库）→ plugins/screenshot/；模型（NuGet 拷到 TargetDir 的 + 仓库资产覆盖的）
+       → assets/models/；清单 → plugin.json。仓库资产最后拷，同名覆盖 NuGet 版本 -->
+  <Target Name="DeployToHost" AfterTargets="Build" Condition="Exists('$(HostOutput)')">
+    <ItemGroup>
+      <PluginDlls Include="$(TargetDir)*.dll" Exclude="$(TargetDir)LesTool.Platform.dll;$(TargetDir)Serilog.dll" />
+      <NugetModels Include="$(TargetDir)models\**\*.*" />
+      <PluginAssets Include="$(MSBuildProjectDirectory)\assets\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginDlls)" DestinationFolder="$(HostOutput)\plugins\$(PluginId)\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(NugetModels)"
+          DestinationFiles="@(NugetModels->'$(HostOutput)\plugins\$(PluginId)\assets\models\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(PluginAssets)"
+          DestinationFiles="@(PluginAssets->'$(HostOutput)\plugins\$(PluginId)\assets\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\plugin.json"
+          DestinationFiles="$(HostOutput)\plugins\$(PluginId)\plugin.json" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

@@ -13,3 +13,7 @@ publish/
 # 系统
 Thumbs.db
 .DS_Store
+
+# 工具产物（会话/安全扫描）
+.mimosa/
+.zcode/

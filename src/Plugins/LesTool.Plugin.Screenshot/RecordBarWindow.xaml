@@ -1,0 +1,59 @@
+<Window x:Class="LesTool.Plugin.Screenshot.RecordBarWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LesTool 录制控制条"
+        WindowStyle="None" ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" ShowActivated="False"
+        Topmost="True" WindowStartupLocation="Manual"
+        Focusable="True"
+        PreviewKeyDown="OnPreviewKeyDown">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/LesTool;component/Assets/Icons.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- 与截图工具栏同款平铺按钮 -->
+            <Style x:Key="BarBtn" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Width" Value="32"/>
+                <Setter Property="Height" Value="28"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="4">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource OverlayHoverBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Border Background="{DynamicResource OverlayBarBackground}" CornerRadius="4" Padding="10,5">
+        <StackPanel Orientation="Horizontal">
+            <Ellipse x:Name="RecDot" Width="10" Height="10" Fill="#FFE53935"
+                     VerticalAlignment="Center"/>
+            <TextBlock x:Name="TimeText" Text="00:00" Foreground="{DynamicResource OverlayIconStroke}"
+                       FontFamily="Consolas" FontSize="14" FontWeight="Bold"
+                       Margin="8,0,14,0" VerticalAlignment="Center"/>
+            <Button x:Name="BtnPause" Style="{StaticResource BarBtn}"
+                    ToolTip="暂停" Click="OnPauseClick">
+                <Path Data="{StaticResource IconPause}" Style="{StaticResource TbIcon}"/>
+            </Button>
+            <Button x:Name="BtnStop" Style="{StaticResource BarBtn}" Margin="6,0,0,0"
+                    ToolTip="停止" Click="OnStopClick">
+                <Path Data="{StaticResource IconStop}" Style="{StaticResource TbIcon}"/>
+            </Button>
+        </StackPanel>
+    </Border>
+</Window>

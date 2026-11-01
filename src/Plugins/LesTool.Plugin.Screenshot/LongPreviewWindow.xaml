@@ -1,0 +1,36 @@
+<Window x:Class="LesTool.Plugin.Screenshot.LongPreviewWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LesTool 长截图预览"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="CanResize"
+        MinWidth="360" MinHeight="280"
+        Background="#202028" WindowStartupLocation="Manual"
+        Focusable="True" PreviewKeyDown="OnPreviewKeyDown">
+    <DockPanel>
+        <Border DockPanel.Dock="Bottom" Background="#2A2A36" Padding="10,6">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock x:Name="InfoText" Foreground="#FFAAAAAA" FontSize="12"
+                           VerticalAlignment="Center" Margin="0,0,14,0"/>
+                <Button Content="复制" Width="56" Height="26"
+                        Background="#3A3A4A" Foreground="White" BorderThickness="0" Cursor="Hand"
+                        Click="OnCopyClick"/>
+                <Button Content="保存" Width="56" Height="26" Margin="6,0,0,0"
+                        Background="#2E9E5B" Foreground="White" BorderThickness="0" Cursor="Hand"
+                        Click="OnSaveClick"/>
+                <Button Content="钉图" Width="56" Height="26" Margin="6,0,0,0"
+                        Background="#3A3A4A" Foreground="White" BorderThickness="0" Cursor="Hand"
+                        Click="OnPinClick"/>
+                <Button Content="丢弃" Width="56" Height="26" Margin="6,0,0,0"
+                        Background="#B33A3A4A" Foreground="White" BorderThickness="0" Cursor="Hand"
+                        Click="OnDiscardClick"/>
+            </StackPanel>
+        </Border>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Auto" Background="#14141C">
+            <Image x:Name="Preview" Stretch="Fill" Margin="8"
+                   RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

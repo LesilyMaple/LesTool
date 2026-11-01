@@ -1,0 +1,278 @@
+<Window x:Class="LesTool.Plugin.Screenshot.OverlayWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:LesTool.Plugin.Screenshot"
+        Title="LesTool 截图遮罩"
+        WindowStyle="None" ResizeMode="NoResize"
+        ShowInTaskbar="False" ShowActivated="False"
+        Topmost="True" Background="Black"
+        WindowStartupLocation="Manual"
+        Focusable="True" UseLayoutRounding="True"
+        PreviewKeyDown="OnPreviewKeyDown"
+        PreviewMouseLeftButtonDown="OnPreviewMouseLeftButtonDown"
+        PreviewMouseMove="OnPreviewMouseMove"
+        PreviewMouseLeftButtonUp="OnPreviewMouseLeftButtonUp">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/LesTool;component/Assets/Icons.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- QQ 式工具栏按钮：无独立底色平铺在栏上，hover 微亮，选中由代码置半透明白高亮 -->
+            <Style x:Key="TbBtn" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Height" Value="28"/>
+                <Setter Property="MinWidth" Value="38"/>
+                <Setter Property="Padding" Value="8,0"/>
+                <Setter Property="Margin" Value="1,0"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                    CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource OverlayHoverBrush}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        <!-- 深色滑条：细轨道 + 白圆滑块，左侧已滑过段更亮 -->
+        <Style x:Key="TbSlider" TargetType="Slider">
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="IsMoveToPointEnabled" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid VerticalAlignment="Center" Background="Transparent">
+                            <Border Height="4" CornerRadius="2" Background="{DynamicResource OverlaySliderTrack}"/>
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Focusable="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Height="4" CornerRadius="2" Background="{DynamicResource OverlaySliderFill}"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Focusable="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Focusable="False" Width="12" Height="12" Cursor="Hand">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Fill="{DynamicResource OverlayIconStroke}"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid x:Name="Root" Cursor="Cross">
+        <Image x:Name="FrozenImage" Stretch="Fill"/>
+        <Canvas x:Name="Paint">
+            <!-- 选区外围四块暗幕，随选区实时更新 -->
+            <Rectangle x:Name="DimTop" Fill="#96000000"/>
+            <Rectangle x:Name="DimLeft" Fill="#96000000"/>
+            <Rectangle x:Name="DimRight" Fill="#96000000"/>
+            <Rectangle x:Name="DimBottom" Fill="#96000000"/>
+            <Rectangle x:Name="SelBorder" Stroke="#FF3B9EFF" StrokeThickness="1"
+                       Visibility="Collapsed"/>
+            <!-- 标注绘制层：预览与导出共用 AnnotationPainter -->
+            <l:AnnotationLayer x:Name="AnnotationCanvas" IsHitTestVisible="False"/>
+            <Border x:Name="SizeTip" Background="#E6101010" CornerRadius="2"
+                    Padding="6,3" Visibility="Collapsed">
+                <TextBlock x:Name="SizeText" Foreground="White" FontSize="12" FontFamily="Consolas"/>
+            </Border>
+            <!-- 选区定稿后的操作栏：第一排三组（编辑组｜类型组｜操作组）；
+                 箭头/画笔/文字/序号选中时下方展开第二排（粗细+颜色），
+                 点颜色块再展开第三排色板——QQ 式级联子面板 -->
+            <Border x:Name="Toolbar" Visibility="Collapsed" Cursor="Arrow" Background="Transparent">
+                <StackPanel>
+                    <Border Background="{DynamicResource OverlayBarBackground}" CornerRadius="6" Padding="6,4">
+                        <StackPanel Orientation="Horizontal">
+                            <!-- 编辑组：形状（矩形/椭圆合体）+ 标注工具 + 撤销重做 -->
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="BtnToolShape" Tag="Shape" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="形状（矩形/椭圆）" Click="OnToolClick">
+                                    <Path Data="{StaticResource IconShapes}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnToolArrow" Tag="Arrow" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="箭头" Click="OnToolClick">
+                                    <Path Data="{StaticResource IconArrow}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnToolPen" Tag="Pen" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="画笔" Click="OnToolClick">
+                                    <Path Data="{StaticResource IconPen}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnToolText" Tag="Text" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="文字" Click="OnToolClick">
+                                    <Path Data="{StaticResource IconText}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnToolBadge" Tag="Badge" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="序号" Click="OnToolClick">
+                                    <Path Data="{StaticResource IconBadge}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnToolMosaic" Tag="Mosaic" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="马赛克" Click="OnToolClick">
+                                    <Path Data="{StaticResource IconMosaic}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Rectangle Width="1" Margin="5,3" Fill="{DynamicResource OverlaySeparator}"/>
+                                <Button x:Name="BtnUndo" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="撤销（Ctrl+Z）" Click="OnUndoClick">
+                                    <Path Data="{StaticResource IconUndo}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnRedo" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="重做（Ctrl+Shift+Z）" Click="OnRedoClick">
+                                    <Path Data="{StaticResource IconRedo}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                            </StackPanel>
+
+                            <Rectangle Width="1" Margin="7,3" Fill="{DynamicResource OverlaySeparatorStrong}"/>
+
+                            <!-- 类型组：录屏 / 长截图 / 识别 -->
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="BtnRecord" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="录屏" Click="OnRecordClick">
+                                    <Path Data="{StaticResource IconRecord}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnLong" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="长截图（滚动拼接）" Click="OnLongClick">
+                                    <Path Data="{StaticResource IconLong}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnOcr" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="文字识别" Click="OnOcrClick">
+                                    <Path Data="{StaticResource IconOcr}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                            </StackPanel>
+
+                            <Rectangle Width="1" Margin="7,3" Fill="{DynamicResource OverlaySeparatorStrong}"/>
+
+                            <!-- 操作组：钉图 / 保存 / 取消 / 确认 -->
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="BtnPin" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="钉图" Click="OnPinClick">
+                                    <Path Data="{StaticResource IconPin}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnSave" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="保存到文件" Click="OnSaveClick">
+                                    <Path Data="{StaticResource IconSave}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnCancel" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="取消（Esc）" Click="OnCancelClick">
+                                    <!-- X 两笔贯穿 24×24 对角，比其他图标显大，单独缩一档 -->
+                                    <Path Data="{StaticResource IconCancel}" Style="{StaticResource TbIcon}"
+                                          Width="14" Height="14" Stroke="{DynamicResource DangerBrush}"/>
+                                </Button>
+                                <Button x:Name="BtnConfirm" Style="{StaticResource TbBtn}" Width="34"
+                                        ToolTip="确认（Enter）" Click="OnConfirmClick">
+                                    <Path Data="{StaticResource IconCheck}" Style="{StaticResource TbIcon}"
+                                          Stroke="{DynamicResource SuccessBrush}"/>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 第二排：形状工具多一组矩形/椭圆选择器，竖线后是粗细+颜色 -->
+                    <Border x:Name="SubThickness" Background="{DynamicResource OverlayBarBackground}" CornerRadius="6" Padding="6,4"
+                            Margin="0,3,0,0" Visibility="Collapsed" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel x:Name="ShapeKindPanel" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button x:Name="BtnShapeRect" Tag="Rect" Style="{StaticResource TbBtn}" Width="30"
+                                        ToolTip="矩形" Click="OnToolClick">
+                                    <Path Data="{StaticResource IconSquare}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Button x:Name="BtnShapeEllipse" Tag="Ellipse" Style="{StaticResource TbBtn}" Width="30"
+                                        ToolTip="椭圆" Click="OnToolClick">
+                                    <Path Data="{StaticResource IconCircle}" Style="{StaticResource TbIcon}"/>
+                                </Button>
+                                <Rectangle Width="1" Margin="4,3" Fill="{DynamicResource OverlaySeparator}"/>
+                            </StackPanel>
+                            <TextBlock Text="粗细" FontSize="12" Foreground="{DynamicResource OverlayTextBrush}"
+                                       VerticalAlignment="Center" Margin="2,0,8,0"/>
+                            <Slider x:Name="ThickSlider" Style="{StaticResource TbSlider}"
+                                    Width="96" VerticalAlignment="Center"
+                                    Minimum="2" Maximum="10"/>
+                            <TextBlock x:Name="ThickValue" Text="4" FontSize="12"
+                                       Foreground="{DynamicResource OverlayIconStroke}"
+                                       FontFamily="Consolas" VerticalAlignment="Center"
+                                       Width="18" TextAlignment="Right" Margin="6,0,4,0"/>
+                            <Rectangle Width="1" Margin="4,3" Fill="{DynamicResource OverlaySeparator}"/>
+                            <Button x:Name="BtnColorDroplet" Style="{StaticResource TbBtn}" Width="32"
+                                    ToolTip="颜色" Click="OnColorDropletClick">
+                                <Rectangle x:Name="ColorDropletSwatch" Width="16" Height="16"
+                                           RadiusX="3" RadiusY="3" Fill="#E53935"/>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 第三排：色板（同样窄条贴左） -->
+                    <Border x:Name="SubColors" Background="{DynamicResource OverlayBarBackground}" CornerRadius="6" Padding="6,4"
+                            Margin="0,3,0,0" Visibility="Collapsed" HorizontalAlignment="Left">
+                        <StackPanel x:Name="ColorSwatches" Orientation="Horizontal"/>
+                    </Border>
+                </StackPanel>
+            </Border>
+            <!-- OCR 结果面板：接在选区右侧（放不下翻左侧） -->
+            <Border x:Name="OcrPanel" Background="#E6101010" CornerRadius="4"
+                    Width="300" Visibility="Collapsed" Cursor="Arrow">
+                <DockPanel>
+                    <Border DockPanel.Dock="Bottom" Background="#22000000" Padding="8,4">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock x:Name="OcrStat" Foreground="#FFAAAAAA" FontSize="11"
+                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <Button Content="复制全部" Width="64"
+                                    Background="#2E9E5B" Foreground="White"
+                                    Click="OnOcrCopyAllClick"/>
+                            <Button Content="收起" Width="40" Margin="4,0,0,0"
+                                    Foreground="White" Click="OnOcrCloseClick"/>
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4,4,4,2">
+                        <StackPanel x:Name="OcrLines"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+            <!-- 放大镜 + 取色器：框选阶段跟随光标，不参与命中 -->
+            <Border x:Name="Loupe" Background="#E6101010" CornerRadius="4" Padding="4"
+                    Visibility="Collapsed" IsHitTestVisible="False">
+                <StackPanel>
+                    <Image x:Name="LoupePixels" Width="81" Height="81" Stretch="Fill"
+                           RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                    <Border Background="#33000000" Margin="0,4,0,0" CornerRadius="2" Padding="4,2">
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle x:Name="LoupeSwatch" Width="12" Height="12" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="LoupeColor" Foreground="White"
+                                       FontFamily="Consolas" FontSize="11"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Canvas>
+    </Grid>
+</Window>

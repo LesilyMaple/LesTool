@@ -1,0 +1,75 @@
+<Window x:Class="LesTool.Views.PanelShellWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        Topmost="True"
+        ShowActivated="True"
+        ResizeMode="NoResize"
+        SizeToContent="Height"
+        Width="640"
+        WindowStartupLocation="Manual"
+        Focusable="True"
+        PreviewKeyDown="OnPreviewKeyDown"
+        Deactivated="OnDeactivated">
+    <!-- 面板窗一档（DESIGN.md）：跟主题表面 + 圆角 8 + 1px 描边。
+         Root 常态 Opacity=0：预创建预热与淡出后都不可见，启动不闪面板。
+         结构（2026-10-13 定案）：上命令面板（搜索输入条，触发器）+ 中搜索清单 + 下页脚提示。 -->
+    <Border x:Name="Root"
+            CornerRadius="{StaticResource CornerRadiusOverlay}"
+            Background="{DynamicResource PanelBackground}"
+            BorderBrush="{DynamicResource WindowBorderColor}"
+            BorderThickness="1"
+            Opacity="0"
+            Padding="20,14,20,14"
+            MinHeight="120">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 命令条：搜索图标 + 输入框（透明平贴表面，焦点环由隐式样式给）+ 空态占位 -->
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           Foreground="{DynamicResource TextHint}"
+                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <Grid Grid.Column="1">
+                    <TextBox x:Name="CommandInput"
+                             TextChanged="OnInputTextChanged"
+                             Background="Transparent" BorderThickness="0" Padding="0,5"
+                             FontSize="{DynamicResource FontSizeBody}"
+                             VerticalAlignment="Center"/>
+                    <TextBlock x:Name="InputHint" Text="搜索命令（名称 / 别名 / Id）…"
+                               IsHitTestVisible="False" Visibility="Collapsed"
+                               FontSize="{DynamicResource FontSizeBody}"
+                               Foreground="{DynamicResource TextHint}"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Grid>
+
+            <!-- 搜索清单：CommandItemStyle 行（字形 + 名称 + 来源徽标），超高滚动 -->
+            <ScrollViewer Grid.Row="1" MaxHeight="288" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="CommandList"/>
+            </ScrollViewer>
+            <TextBlock x:Name="EmptyHint" Grid.Row="1" Text="无匹配命令"
+                       FontSize="{DynamicResource FontSizeBody}"
+                       Foreground="{DynamicResource TextHint}"
+                       Margin="0,4,0,8" Visibility="Collapsed"/>
+
+            <!-- 页脚提示 -->
+            <TextBlock Grid.Row="2" Text="↑↓ 选择 · Enter 执行 · Esc 收起"
+                       FontSize="{DynamicResource FontSizeCaption}"
+                       Foreground="{DynamicResource TextHint}"
+                       Margin="0,12,0,0"/>
+        </Grid>
+    </Border>
+</Window>

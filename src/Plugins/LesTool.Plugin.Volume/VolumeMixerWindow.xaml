@@ -1,0 +1,138 @@
+<Window x:Class="LesTool.Plugin.Volume.VolumeMixerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        Topmost="True"
+        ShowActivated="True"
+        ResizeMode="NoResize"
+        SizeToContent="Height"
+        Width="376"
+        WindowStartupLocation="Manual"
+        Focusable="True"
+        PreviewKeyDown="OnPreviewKeyDown"
+        Deactivated="OnDeactivated">
+    <!-- 托盘浮窗（面板窗同款表面：跟主题 + 圆角 8 + 1px 描边），主屏右下角浮出。
+         Root 常态 Opacity=0：预创建预热与淡出后均不可见。 -->
+    <Window.Resources>
+        <!-- 混音器滑杆（DESIGN.md 已登记特例）：4px 轨道 + 14 圆点；
+             填充色取 Slider.Foreground，静音态由 code-behind 换成 SliderMutedFillBrush -->
+        <Style x:Key="MixerSliderStyle" TargetType="Slider">
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="MinHeight" Value="{StaticResource ControlHeight}"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsMoveToPointEnabled" Value="True"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavAccent}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Border Background="Transparent">
+                            <Grid MinHeight="20" VerticalAlignment="Center">
+                                <Border Height="4" VerticalAlignment="Center"
+                                        CornerRadius="4" Background="{DynamicResource SliderTrackBrush}"
+                                        IsHitTestVisible="False"/>
+                                <Track x:Name="PART_Track" MinHeight="20">
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Command="{x:Static Slider.DecreaseLarge}"
+                                                      Focusable="False" IsTabStop="False">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate TargetType="RepeatButton">
+                                                    <Grid Background="Transparent" Height="20">
+                                                        <Border Height="4" VerticalAlignment="Center"
+                                                                CornerRadius="4"
+                                                                Background="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Slider}}"/>
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Command="{x:Static Slider.IncreaseLarge}"
+                                                      Focusable="False" IsTabStop="False">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate TargetType="RepeatButton">
+                                                    <Grid Background="Transparent" Height="20"/>
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </Track.IncreaseRepeatButton>
+                                    <Track.Thumb>
+                                        <Thumb Focusable="False">
+                                            <Thumb.Template>
+                                                <ControlTemplate TargetType="Thumb">
+                                                    <Grid Background="Transparent">
+                                                        <Ellipse Width="14" Height="14"
+                                                                 Fill="{DynamicResource SliderThumbBrush}"/>
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border x:Name="Root"
+            CornerRadius="{StaticResource CornerRadiusOverlay}"
+            Background="{DynamicResource PanelBackground}"
+            BorderBrush="{DynamicResource WindowBorderColor}"
+            BorderThickness="1"
+            Opacity="0"
+            Padding="16,12,16,14">
+        <StackPanel>
+            <!-- 设备卡片：设备名 + 主音量（图标点击静音） -->
+            <Border CornerRadius="{StaticResource CornerRadiusOverlay}"
+                    Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource CardBorderColor}"
+                    BorderThickness="1"
+                    Padding="12,10,12,10">
+                <StackPanel>
+                    <TextBlock x:Name="DeviceName" Text="…"
+                               FontSize="{DynamicResource FontSizeBody}"
+                               Foreground="{DynamicResource TextPrimary}"
+                               TextTrimming="CharacterEllipsis"/>
+                    <Grid x:Name="MasterRow" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="MasterIcon" Width="28" Height="28" MinHeight="0"
+                                Padding="0" Background="Transparent" BorderThickness="0"
+                                Click="OnMasterIconClick" ToolTip="静音 / 取消静音">
+                            <TextBlock x:Name="MasterGlyph" Text="&#xE995;"
+                                       FontFamily="Segoe MDL2 Assets" FontSize="16"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                        </Button>
+                        <Slider x:Name="MasterSlider" Grid.Column="1" Margin="8,0,8,0"
+                                Style="{StaticResource MixerSliderStyle}"
+                                ValueChanged="OnMasterSliderChanged"/>
+                        <TextBlock x:Name="MasterLevel" Grid.Column="2" Text="0"
+                                   MinWidth="28" TextAlignment="Right" VerticalAlignment="Center"
+                                   FontSize="{DynamicResource FontSizeBody}"
+                                   Foreground="{DynamicResource TextSecondary}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 应用行（动态生成：图标 | 滑块 | 数值；图标点击静音） -->
+            <ScrollViewer MaxHeight="440" Margin="0,10,0,0"
+                          VerticalScrollBarVisibility="Auto" PanningMode="VerticalOnly">
+                <StackPanel x:Name="AppList"/>
+            </ScrollViewer>
+            <TextBlock x:Name="EmptyHint" Text="当前没有在发声的应用"
+                       FontSize="{DynamicResource FontSizeCaption}"
+                       Foreground="{DynamicResource TextHint}"
+                       HorizontalAlignment="Center" Margin="0,12,0,4"
+                       Visibility="Collapsed"/>
+        </StackPanel>
+    </Border>
+</Window>

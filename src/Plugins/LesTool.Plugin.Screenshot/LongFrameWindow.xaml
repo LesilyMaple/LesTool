@@ -1,0 +1,18 @@
+<Window x:Class="LesTool.Plugin.Screenshot.LongFrameWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LesTool 长截图边框"
+        WindowStyle="None" ResizeMode="NoResize"
+        AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" ShowActivated="False"
+        Topmost="True" WindowStartupLocation="Manual"
+        UseLayoutRounding="True">
+    <Grid>
+        <!-- 绿框画在捕获区域外沿：成品不含边框 -->
+        <Rectangle Fill="#FF43A047" Height="2" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+        <Rectangle Fill="#FF43A047" Height="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"/>
+        <Rectangle Fill="#FF43A047" Width="2" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="0,2,0,2"/>
+        <Rectangle Fill="#FF43A047" Width="2" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="0,2,0,2"/>
+    </Grid>
+</Window>

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>LesTool.Plugin.Volume</RootNamespace>
+    <AssemblyName>LesTool.Plugin.Volume</AssemblyName>
+    <Version>1.0.0</Version>
+    <PluginId>volume</PluginId>
+    <HostOutput>$(MSBuildProjectDirectory)\..\..\LesTool\bin\$(Configuration)\net8.0-windows\win-x64</HostOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\LesTool.Platform\LesTool.Platform.csproj" />
+  </ItemGroup>
+
+  <Target Name="DeployToHost" AfterTargets="Build" Condition="Exists('$(HostOutput)')">
+    <ItemGroup>
+      <PluginDlls Include="$(TargetDir)*.dll" Exclude="$(TargetDir)LesTool.Platform.dll;$(TargetDir)Serilog.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginDlls)" DestinationFolder="$(HostOutput)\plugins\$(PluginId)\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\plugin.json"
+          DestinationFiles="$(HostOutput)\plugins\$(PluginId)\plugin.json" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
